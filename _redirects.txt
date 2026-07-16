@@ -1,0 +1,1 @@
+/vms /vms/index.html 200
