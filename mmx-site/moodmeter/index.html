@@ -1,0 +1,1035 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MoodMate — Daily Check-In</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+:root {
+  --accent: #22C55E;
+  --accent-rgb: 34, 197, 94;
+  --bg: #0F0F1A;
+  --card: rgba(255,255,255,0.05);
+  --card-border: rgba(255,255,255,0.08);
+  --text: #F1F5F9;
+  --text-muted: #94A3B8;
+  --font: 'Inter', sans-serif;
+  color-scheme: dark;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: var(--font);
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: radial-gradient(ellipse 80% 60% at 50% -10%, rgba(var(--accent-rgb),0.12) 0%, transparent 70%);
+  pointer-events: none;
+  transition: background 0.8s ease;
+  z-index: 0;
+}
+
+/* ── LOGIN ── */
+#login-overlay {
+  position: fixed; inset: 0; z-index: 100;
+  background: #0F0F1A;
+  display: flex; align-items: center; justify-content: center;
+  padding: 1.5rem;
+}
+.login-card {
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.1);
+  backdrop-filter: blur(20px);
+  border-radius: 24px;
+  padding: 2.5rem 2rem;
+  width: 100%; max-width: 420px;
+  box-shadow: 0 32px 80px rgba(0,0,0,0.6);
+}
+.login-logo {
+  text-align: center; margin-bottom: 2rem;
+}
+.login-logo .butterfly-icon { font-size: 3rem; display: block; margin-bottom: 0.5rem; }
+.login-logo h1 { font-size: 1.75rem; font-weight: 800; background: linear-gradient(135deg, #22C55E, #3B82F6); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+.login-logo p { color: var(--text-muted); font-size: 0.85rem; margin-top: 0.25rem; }
+.form-group { margin-bottom: 1.1rem; }
+.form-group label { display: block; font-size: 0.78rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 0.4rem; }
+.form-group input, .form-group select {
+  width: 100%; padding: 0.75rem 1rem;
+  background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 10px; color: var(--text); font-family: var(--font); font-size: 0.9rem;
+  outline: none; transition: border-color 0.3s;
+}
+.form-group input:focus, .form-group select:focus { border-color: var(--accent); }
+.form-group select option { background: #1e1e2e; }
+.btn-primary {
+  width: 100%; padding: 0.85rem;
+  background: var(--accent); border: none; border-radius: 12px;
+  color: #fff; font-family: var(--font); font-size: 0.95rem; font-weight: 700;
+  cursor: pointer; transition: all 0.3s; margin-top: 0.5rem;
+  box-shadow: 0 4px 20px rgba(var(--accent-rgb),0.4);
+}
+.btn-primary:hover { filter: brightness(1.1); transform: translateY(-1px); }
+
+/* ── HEADER ── */
+header {
+  position: sticky; top: 0; z-index: 50;
+  background: rgba(15,15,26,0.85); backdrop-filter: blur(20px);
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+  padding: 0.9rem 1.5rem;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.header-brand { display: flex; align-items: center; gap: 0.6rem; }
+.header-brand .logo-icon { font-size: 1.4rem; }
+.header-brand h2 { font-size: 1rem; font-weight: 800; color: var(--text); }
+.header-user { display: flex; align-items: center; gap: 1rem; }
+.user-pill {
+  background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 999px; padding: 0.3rem 0.9rem;
+  font-size: 0.8rem; color: var(--text-muted);
+}
+.user-pill strong { color: var(--text); }
+.btn-change {
+  background: transparent; border: 1px solid rgba(255,255,255,0.15);
+  border-radius: 8px; padding: 0.35rem 0.8rem;
+  color: var(--text-muted); font-family: var(--font); font-size: 0.78rem;
+  cursor: pointer; transition: all 0.3s;
+}
+.btn-change:hover { border-color: var(--accent); color: var(--accent); }
+
+/* ── MAIN LAYOUT ── */
+main {
+  max-width: 860px; margin: 0 auto;
+  padding: 2rem 1.5rem 4rem;
+  position: relative; z-index: 1;
+}
+.section-label {
+  font-size: 0.72rem; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.12em; color: var(--text-muted);
+  margin-bottom: 1rem;
+}
+
+/* ── MOOD SELECTOR ── */
+.mood-row {
+  display: flex; gap: 0.75rem; flex-wrap: wrap;
+  justify-content: center; margin-bottom: 1.75rem;
+}
+.mood-btn {
+  flex: 1; min-width: 110px; max-width: 150px;
+  background: var(--card); border: 2px solid var(--card-border);
+  border-radius: 16px; padding: 1rem 0.5rem;
+  cursor: pointer; transition: all 0.4s ease;
+  text-align: center; position: relative; overflow: hidden;
+}
+.mood-btn::before {
+  content: ''; position: absolute; inset: 0;
+  opacity: 0; transition: opacity 0.4s;
+  background: radial-gradient(circle at center, var(--mood-color, #fff) 0%, transparent 70%);
+}
+.mood-btn:hover::before, .mood-btn.active::before { opacity: 0.12; }
+.mood-btn.active { border-color: var(--mood-color, var(--accent)); box-shadow: 0 0 24px rgba(var(--mood-rgb,34,197,94),0.3); }
+.mood-btn .mood-emoji { font-size: 1.6rem; display: block; margin-bottom: 0.35rem; }
+.mood-btn .mood-label { font-size: 0.75rem; font-weight: 700; display: block; color: var(--text-muted); transition: color 0.4s; }
+.mood-btn.active .mood-label { color: var(--mood-color, var(--accent)); }
+.mood-btn .mood-score { font-size: 0.65rem; color: rgba(255,255,255,0.3); margin-top: 0.2rem; }
+
+/* ── BUTTERFLY CARD ── */
+.butterfly-card {
+  background: var(--card); border: 1px solid var(--card-border);
+  backdrop-filter: blur(20px); border-radius: 24px;
+  padding: 2.5rem 2rem; text-align: center;
+  margin-bottom: 1.75rem; position: relative; overflow: hidden;
+  transition: border-color 0.6s ease;
+}
+.butterfly-card.has-mood { border-color: rgba(var(--accent-rgb),0.3); }
+
+#particle-canvas {
+  position: absolute; inset: 0; pointer-events: none; border-radius: 24px;
+}
+
+.butterfly-wrap {
+  position: relative; z-index: 2;
+  width: 220px; height: 160px;
+  margin: 0 auto 1.25rem;
+  perspective: 600px;
+}
+.butterfly-svg { width: 100%; height: 100%; }
+
+.tagline {
+  font-size: 1.2rem; font-weight: 700;
+  color: var(--accent); margin-bottom: 0.4rem;
+  transition: color 0.6s ease; position: relative; z-index: 2;
+  min-height: 1.6rem;
+}
+.tagline-sub {
+  font-size: 0.82rem; color: var(--text-muted);
+  position: relative; z-index: 2;
+}
+
+/* Wing animation CSS vars */
+:root { --flap-dur: 0.8s; }
+@keyframes flapLeft { 0%,100% { transform: rotateY(0deg); } 50% { transform: rotateY(-55deg); } }
+@keyframes flapRight { 0%,100% { transform: rotateY(0deg); } 50% { transform: rotateY(55deg); } }
+.wing-left { animation: flapLeft var(--flap-dur, 0.8s) ease-in-out infinite; transform-origin: right center; transform-box: fill-box; }
+.wing-right { animation: flapRight var(--flap-dur, 0.8s) ease-in-out infinite; transform-origin: left center; transform-box: fill-box; }
+
+/* ── INSIGHT CAROUSEL ── */
+.insight-section { margin-bottom: 1.75rem; }
+.insight-container {
+  background: var(--card); border: 1px solid var(--card-border);
+  backdrop-filter: blur(20px); border-radius: 24px;
+  padding: 2rem 1.75rem; min-height: 180px;
+  position: relative; overflow: hidden;
+  transition: border-color 0.6s ease;
+}
+.insight-container.has-mood { border-color: rgba(var(--accent-rgb),0.3); }
+
+.quote-block {
+  margin-bottom: 1.5rem; min-height: 4rem;
+}
+.quote-text {
+  font-size: 1.15rem; font-weight: 600; line-height: 1.5;
+  color: var(--accent); transition: color 0.6s ease;
+}
+.quote-cursor { display: inline-block; width: 2px; height: 1.1em; background: var(--accent); margin-left: 2px; vertical-align: middle; animation: blink 0.8s step-end infinite; }
+@keyframes blink { 0%,100% { opacity: 1; } 50% { opacity: 0; } }
+
+.insight-card-display {
+  background: rgba(255,255,255,0.04); border-radius: 14px;
+  padding: 1.2rem 1.25rem; min-height: 90px;
+  transition: opacity 0.4s ease, transform 0.4s ease;
+}
+.insight-card-display.fade-out { opacity: 0; transform: translateY(8px); }
+.insight-card-icon { font-size: 1.5rem; margin-bottom: 0.5rem; }
+.insight-card-title { font-size: 0.9rem; font-weight: 700; color: var(--text); margin-bottom: 0.3rem; }
+.insight-card-body { font-size: 0.82rem; color: var(--text-muted); line-height: 1.5; }
+
+.progress-dots {
+  display: flex; gap: 6px; justify-content: center; margin-top: 1rem;
+}
+.p-dot {
+  width: 6px; height: 6px; border-radius: 999px;
+  background: rgba(255,255,255,0.2); transition: all 0.4s;
+}
+.p-dot.active { width: 20px; background: var(--accent); }
+
+/* ── COACHING TABS ── */
+.coaching-section { margin-bottom: 1.75rem; }
+.tab-row { display: flex; gap: 0.5rem; margin-bottom: 1rem; flex-wrap: wrap; }
+.tab-btn {
+  padding: 0.5rem 1.1rem;
+  background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 999px; cursor: pointer; font-family: var(--font);
+  font-size: 0.8rem; font-weight: 600; color: var(--text-muted);
+  transition: all 0.3s;
+}
+.tab-btn.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+.tab-panel { display: none; }
+.tab-panel.active { display: block; }
+.coaching-card {
+  background: var(--card); border: 1px solid var(--card-border);
+  backdrop-filter: blur(16px); border-radius: 20px; padding: 1.5rem;
+}
+.coaching-card h4 { font-size: 0.9rem; font-weight: 700; color: var(--accent); margin-bottom: 0.75rem; transition: color 0.6s; }
+.coaching-card p { font-size: 0.84rem; color: var(--text-muted); line-height: 1.6; margin-bottom: 0.6rem; }
+.coaching-steps { list-style: none; counter-reset: steps; }
+.coaching-steps li { counter-increment: steps; display: flex; gap: 0.75rem; margin-bottom: 0.65rem; font-size: 0.83rem; color: var(--text-muted); line-height: 1.5; }
+.coaching-steps li::before { content: counter(steps); min-width: 22px; height: 22px; background: rgba(var(--accent-rgb),0.2); color: var(--accent); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.72rem; font-weight: 700; flex-shrink: 0; transition: background 0.6s, color 0.6s; }
+
+/* ── CHECK-IN FORM ── */
+.checkin-section {}
+.checkin-card {
+  background: var(--card); border: 1px solid var(--card-border);
+  backdrop-filter: blur(20px); border-radius: 24px; padding: 2rem 1.75rem;
+}
+.shift-row { display: flex; gap: 0.65rem; margin-bottom: 1.25rem; flex-wrap: wrap; }
+.shift-btn {
+  flex: 1; min-width: 90px; padding: 0.65rem 0.5rem;
+  background: rgba(255,255,255,0.05); border: 1.5px solid rgba(255,255,255,0.08);
+  border-radius: 12px; cursor: pointer; font-family: var(--font);
+  font-size: 0.83rem; font-weight: 600; color: var(--text-muted);
+  transition: all 0.3s; text-align: center;
+}
+.shift-btn.active { border-color: var(--accent); color: var(--accent); background: rgba(var(--accent-rgb),0.1); }
+.note-area {
+  width: 100%; padding: 0.85rem 1rem;
+  background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 12px; color: var(--text); font-family: var(--font);
+  font-size: 0.88rem; resize: vertical; min-height: 90px; outline: none;
+  transition: border-color 0.3s; margin-bottom: 1.25rem;
+}
+.note-area:focus { border-color: var(--accent); }
+.note-area::placeholder { color: var(--text-muted); }
+.submit-row { display: flex; align-items: center; gap: 1rem; }
+.btn-submit {
+  flex: 1; padding: 0.9rem 1.5rem;
+  background: var(--accent); border: none; border-radius: 14px;
+  color: #fff; font-family: var(--font); font-size: 0.95rem; font-weight: 700;
+  cursor: pointer; transition: all 0.4s;
+  box-shadow: 0 4px 24px rgba(var(--accent-rgb),0.4);
+}
+.btn-submit:hover { filter: brightness(1.1); transform: translateY(-1px); }
+.btn-submit:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+.submit-status { font-size: 0.82rem; color: var(--text-muted); }
+.submit-status.success { color: #22C55E; }
+.submit-status.error { color: #EF4444; }
+
+/* ── CONFETTI CANVAS ── */
+#confetti-canvas {
+  position: fixed; inset: 0; pointer-events: none; z-index: 200;
+}
+
+/* ── EMPTY STATE ── */
+.empty-hint {
+  text-align: center; padding: 2rem 1rem;
+  color: var(--text-muted); font-size: 0.88rem;
+}
+.empty-hint .hint-icon { font-size: 2rem; margin-bottom: 0.5rem; display: block; }
+
+/* ── RESPONSIVE ── */
+@media (max-width: 540px) {
+  .mood-btn { min-width: calc(33% - 0.75rem); }
+  .header-user .user-pill { display: none; }
+}
+</style>
+</head>
+<body>
+
+<!-- LOGIN OVERLAY -->
+<div id="login-overlay">
+  <div class="login-card">
+    <div class="login-logo">
+      <span class="butterfly-icon">🦋</span>
+      <h1>MoodMate</h1>
+      <p>Daily Employee Check-In</p>
+    </div>
+    <div class="form-group">
+      <label>Dayforce ID</label>
+      <input type="text" id="l-dfid" placeholder="e.g. DF-10482" />
+    </div>
+    <div class="form-group">
+      <label>Full Name</label>
+      <input type="text" id="l-name" placeholder="Jane Smith" />
+    </div>
+    <div class="form-group">
+      <label>Work Email</label>
+      <input type="email" id="l-email" placeholder="jane@company.com" />
+    </div>
+    <div class="form-group">
+      <label>Department</label>
+      <select id="l-dept">
+        <option value="">Select department...</option>
+        <option>Human Resources</option>
+        <option>Information Technology</option>
+        <option>Finance & Accounting</option>
+        <option>Operations</option>
+        <option>Customer Service</option>
+        <option>Sales & Marketing</option>
+        <option>Engineering</option>
+        <option>Legal & Compliance</option>
+        <option>Administration</option>
+        <option>Other</option>
+      </select>
+    </div>
+    <button class="btn-primary" onclick="doLogin()">Enter MoodMate →</button>
+  </div>
+</div>
+
+<!-- HEADER -->
+<header id="main-header" style="display:none">
+  <div class="header-brand">
+    <span class="logo-icon">🦋</span>
+    <h2>MoodMate</h2>
+  </div>
+  <div class="header-user">
+    <div class="user-pill" id="user-pill">Welcome, <strong id="user-display-name">—</strong></div>
+    <button class="btn-change" onclick="changeUser()">Change User</button>
+  </div>
+</header>
+
+<!-- CONFETTI CANVAS -->
+<canvas id="confetti-canvas"></canvas>
+
+<!-- MAIN -->
+<main id="main-app" style="display:none">
+
+  <!-- 1. MOOD SELECTOR -->
+  <div class="section-label">How are you feeling right now?</div>
+  <div class="mood-row" id="mood-row"></div>
+
+  <!-- 2. BUTTERFLY CARD -->
+  <div class="butterfly-card" id="butterfly-card">
+    <canvas id="particle-canvas"></canvas>
+    <div class="butterfly-wrap">
+      <svg class="butterfly-svg" id="butterfly-svg" viewBox="0 0 220 160" xmlns="http://www.w3.org/2000/svg">
+        <!-- Left upper wing -->
+        <g class="wing-left" id="wl-upper">
+          <ellipse cx="72" cy="62" rx="62" ry="50" fill="#94A3B8" opacity="0.9" id="wl-u-fill"/>
+          <ellipse cx="72" cy="62" rx="62" ry="50" fill="none" stroke="rgba(255,255,255,0.15)" stroke-width="1.5"/>
+          <!-- veins -->
+          <path d="M110 80 Q85 50 50 45" stroke="rgba(255,255,255,0.2)" stroke-width="1" fill="none"/>
+          <path d="M110 80 Q78 65 55 75" stroke="rgba(255,255,255,0.15)" stroke-width="1" fill="none"/>
+          <path d="M110 80 Q72 80 42 90" stroke="rgba(255,255,255,0.1)" stroke-width="1" fill="none"/>
+        </g>
+        <!-- Left lower wing -->
+        <g class="wing-left" id="wl-lower">
+          <ellipse cx="78" cy="112" rx="46" ry="35" fill="#94A3B8" opacity="0.75" id="wl-l-fill"/>
+          <ellipse cx="78" cy="112" rx="46" ry="35" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="1.2"/>
+          <path d="M110 100 Q88 110 68 125" stroke="rgba(255,255,255,0.15)" stroke-width="1" fill="none"/>
+        </g>
+        <!-- Right upper wing -->
+        <g class="wing-right" id="wr-upper">
+          <ellipse cx="148" cy="62" rx="62" ry="50" fill="#94A3B8" opacity="0.9" id="wr-u-fill"/>
+          <ellipse cx="148" cy="62" rx="62" ry="50" fill="none" stroke="rgba(255,255,255,0.15)" stroke-width="1.5"/>
+          <path d="M110 80 Q135 50 170 45" stroke="rgba(255,255,255,0.2)" stroke-width="1" fill="none"/>
+          <path d="M110 80 Q142 65 165 75" stroke="rgba(255,255,255,0.15)" stroke-width="1" fill="none"/>
+          <path d="M110 80 Q148 80 178 90" stroke="rgba(255,255,255,0.1)" stroke-width="1" fill="none"/>
+        </g>
+        <!-- Right lower wing -->
+        <g class="wing-right" id="wr-lower">
+          <ellipse cx="142" cy="112" rx="46" ry="35" fill="#94A3B8" opacity="0.75" id="wr-l-fill"/>
+          <ellipse cx="142" cy="112" rx="46" ry="35" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="1.2"/>
+          <path d="M110 100 Q132 110 152 125" stroke="rgba(255,255,255,0.15)" stroke-width="1" fill="none"/>
+        </g>
+        <!-- Body -->
+        <ellipse cx="110" cy="88" rx="5" ry="42" fill="#1e1e2e"/>
+        <ellipse cx="110" cy="88" rx="4" ry="40" fill="#2d2d44"/>
+        <!-- Head -->
+        <circle cx="110" cy="46" r="7" fill="#2d2d44"/>
+        <!-- Antennae -->
+        <path d="M107 41 Q98 25 92 18" stroke="#94A3B8" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+        <circle cx="92" cy="18" r="2.5" fill="#94A3B8"/>
+        <path d="M113 41 Q122 25 128 18" stroke="#94A3B8" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+        <circle cx="128" cy="18" r="2.5" fill="#94A3B8"/>
+      </svg>
+    </div>
+    <div class="tagline" id="tagline">Select a mood to begin your check-in</div>
+    <div class="tagline-sub" id="tagline-sub">Your butterfly is waiting to reflect your energy</div>
+  </div>
+
+  <!-- 3. INSIGHT CAROUSEL -->
+  <div class="insight-section" id="insight-section">
+    <div class="section-label">Your Daily Insight</div>
+    <div class="insight-container" id="insight-container">
+      <div class="empty-hint" id="insight-empty">
+        <span class="hint-icon">✨</span>
+        Select a mood above to unlock personalized insights
+      </div>
+      <div id="insight-content" style="display:none">
+        <div class="quote-block">
+          <div class="quote-text" id="quote-text"></div>
+        </div>
+        <div class="insight-card-display" id="insight-card">
+          <div class="insight-card-icon" id="ic-icon"></div>
+          <div class="insight-card-title" id="ic-title"></div>
+          <div class="insight-card-body" id="ic-body"></div>
+        </div>
+        <div class="progress-dots" id="progress-dots"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 4. COACHING TABS -->
+  <div class="coaching-section">
+    <div class="section-label">Coaching Support</div>
+    <div class="tab-row">
+      <button class="tab-btn active" onclick="switchTab('grow')">GROW Model</button>
+      <button class="tab-btn" onclick="switchTab('situational')">Situational</button>
+      <button class="tab-btn" onclick="switchTab('positive')">Positive Reinforcement</button>
+    </div>
+    <div class="tab-panel active" id="tab-grow">
+      <div class="coaching-card">
+        <h4 id="grow-heading">GROW Coaching Model</h4>
+        <p>A structured conversation framework to help you move forward, whatever your mood.</p>
+        <ul class="coaching-steps" id="grow-steps">
+          <li><strong>Goal</strong> — What do you want to achieve today, right now?</li>
+          <li><strong>Reality</strong> — Where are you honestly at? What's actually happening?</li>
+          <li><strong>Options</strong> — What are three things you could do, big or small?</li>
+          <li><strong>Will</strong> — What one action will you commit to before end of day?</li>
+        </ul>
+      </div>
+    </div>
+    <div class="tab-panel" id="tab-situational">
+      <div class="coaching-card">
+        <h4 id="sit-heading">Situational Coaching</h4>
+        <p id="sit-body">Your current mood signals what type of support might help most right now.</p>
+        <ul class="coaching-steps" id="sit-steps">
+          <li>High energy (4-5): Stretch yourself — take on a challenge or mentor someone today.</li>
+          <li>Neutral (3): Seek a small win. Completing even one task builds momentum for the rest.</li>
+          <li>Stressed (2): Ask for task prioritization support. You don't have to sort this alone.</li>
+          <li>Burned out (1): Signal to your supervisor. A plan to redistribute load is both valid and professional.</li>
+        </ul>
+      </div>
+    </div>
+    <div class="tab-panel" id="tab-positive">
+      <div class="coaching-card">
+        <h4 id="pos-heading">Positive Reinforcement</h4>
+        <p id="pos-body">Recognize what's working — even on hard days, there's something worth acknowledging.</p>
+        <ul class="coaching-steps" id="pos-steps">
+          <li>Name one thing you did well this week, however small.</li>
+          <li>Notice the effort, not just the outcome. Showing up matters.</li>
+          <li>Thank one person today — gratitude rewires toward the positive.</li>
+          <li>Track your check-in streak. Consistency itself is a win worth celebrating.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- 5. CHECK-IN FORM -->
+  <div class="checkin-section">
+    <div class="section-label">Submit Your Check-In</div>
+    <div class="checkin-card">
+      <div class="section-label" style="margin-bottom:0.6rem">Current Shift</div>
+      <div class="shift-row" id="shift-row">
+        <button class="shift-btn" data-shift="Morning" onclick="selectShift(this)">🌅 Morning</button>
+        <button class="shift-btn" data-shift="Afternoon" onclick="selectShift(this)">☀️ Afternoon</button>
+        <button class="shift-btn" data-shift="Night" onclick="selectShift(this)">🌙 Night</button>
+      </div>
+      <div class="section-label" style="margin-bottom:0.6rem">Optional Note</div>
+      <textarea class="note-area" id="note-area" placeholder="Anything you'd like to share with HR or your supervisor? (optional, confidential)"></textarea>
+      <div class="submit-row">
+        <button class="btn-submit" id="submit-btn" onclick="submitCheckin()">Submit Check-In 🦋</button>
+        <div class="submit-status" id="submit-status"></div>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<script>
+// ════════════════════════════════════════
+// CONFIG
+// ════════════════════════════════════════
+const MOODMATE_CONFIG = {
+  siteUrl: "https://medmetrix-my.sharepoint.com/personal/jcua_med-metrix_com",
+  excelRelUrl: "/personal/jcua_med-metrix_com/Documents/#Workfiles/Documents/a-ITLT/Sytem_Library/Mood Meter/MoodMate_Database.xlsx",
+  sheetName: "CheckIns"
+};
+
+// ════════════════════════════════════════
+// MOOD DATA
+// ════════════════════════════════════════
+const MOODS = [
+  { score: 5, label: "Energized", emoji: "⚡", color: "#22C55E", rgb: "34,197,94", tagline: "You're electric today!", sub: "Channel that energy into something that matters." },
+  { score: 4, label: "Focused",   emoji: "🎯", color: "#3B82F6", rgb: "59,130,246", tagline: "Deep in the zone.", sub: "Protect this state — it's valuable." },
+  { score: 3, label: "Neutral",   emoji: "😐", color: "#94A3B8", rgb: "148,163,184", tagline: "Steady and present.", sub: "Consistency is underrated. You're here." },
+  { score: 2, label: "Stressed",  emoji: "😰", color: "#F97316", rgb: "249,115,22", tagline: "It's okay to pause.", sub: "Breathing before reacting is a superpower." },
+  { score: 1, label: "Burned Out",emoji: "😩", color: "#EF4444", rgb: "239,68,68",  tagline: "You matter more than work.", sub: "This feeling is information, not a verdict." },
+];
+
+const QUOTES = {
+  5: '"Energy is the currency of peak performance — you\'re rich today."',
+  4: '"Clarity of mind is more valuable than hours of confused effort."',
+  3: '"The middle path is where most great work actually gets done."',
+  2: '"Even the most capable people need to put down the weight sometimes."',
+  1: '"Rest is not giving up. It\'s gathering yourself for what comes next."',
+};
+
+const INSIGHTS = {
+  5: [
+    { icon: "🚀", title: "Momentum is yours", body: "This peak energy is rare. Use it to tackle the task you've been avoiding. Momentum compounds." },
+    { icon: "🌱", title: "Plant seeds for tomorrow", body: "When you're at your best, prep for harder days: document, mentor, create." },
+    { icon: "💡", title: "Spark someone else", body: "High energy is contagious. A kind word or helping a teammate today multiplies your impact." },
+    { icon: "🎯", title: "Set a stretch goal", body: "Don't coast. Use this state to raise your own bar — you have the fuel for it right now." },
+    { icon: "🔥", title: "Protect the fire", body: "Note what made today great. Sleep, hydration, connection? Replicate it intentionally." },
+    { icon: "🤝", title: "Share your wins", body: "Celebrate openly. It builds team culture and reinforces your own confidence." },
+  ],
+  4: [
+    { icon: "🧘", title: "Guard your flow", body: "You're in it. Block the calendar, mute notifications, ride the wave while it lasts." },
+    { icon: "📋", title: "One thing at a time", body: "Focus means saying no to the second priority right now. Single-tasking is a skill." },
+    { icon: "⏱", title: "Pomodoro your power", body: "25 min sprints + 5 min breaks. Your brain will thank you with sustained output." },
+    { icon: "🎵", title: "Find your frequency", body: "Instrumental music, ambient sound, or silence — find what deepens your personal focus state." },
+    { icon: "📝", title: "Write it down", body: "Capture ideas as they come. Your focused brain is generating gold — don't let it slip." },
+    { icon: "🌟", title: "Consistency beats intensity", body: "Today's steady work matters more than yesterday's burst. Keep showing up like this." },
+  ],
+  3: [
+    { icon: "🌄", title: "Start small", body: "Pick one 10-minute task. Completion sparks motivation — not the other way around." },
+    { icon: "☕", title: "Reset with intention", body: "A short walk, fresh water, or a stretch can genuinely shift neutral to forward." },
+    { icon: "💬", title: "Connect with someone", body: "A genuine 2-minute conversation can change the energy of your whole day." },
+    { icon: "🗂", title: "Tidy your space", body: "Organize your desk or inbox. External order often creates internal clarity." },
+    { icon: "🌿", title: "Neutral is valid", body: "Not every day needs to be peak performance. Steady progress is still real progress." },
+    { icon: "🔍", title: "Find the one thing", body: "What's the single action today that would make you feel most accomplished by 5pm?" },
+  ],
+  2: [
+    { icon: "🫁", title: "Box breathing works", body: "Inhale 4s → hold 4s → exhale 4s → hold 4s. Do it twice. Your nervous system will respond." },
+    { icon: "✂️", title: "Cut the list in half", body: "Write everything you think you must do. Now cross out half. Seriously — most of it can wait." },
+    { icon: "🗣", title: "Say it out loud", body: "Tell your supervisor or a trusted colleague what's weighing on you. Silence makes stress bigger." },
+    { icon: "🧩", title: "Break it smaller", body: "The task isn't 'finish the report' — it's 'write the first sentence'. Start exactly there." },
+    { icon: "🛑", title: "Permission to pause", body: "Five minutes away from the screen isn't laziness. It's strategy. Take it now." },
+    { icon: "💙", title: "You've handled hard before", body: "Think of the last difficult week you got through. You did it then. The same resilience is here now." },
+  ],
+  1: [
+    { icon: "🤍", title: "Your value isn't your output", body: "You are not what you produce. Burnout is the cost of caring — and you care deeply." },
+    { icon: "🌊", title: "Rest is productive", body: "Recovery isn't lost time. It's the investment that makes all future work possible." },
+    { icon: "📞", title: "Ask for help today", body: "Tell HR, your supervisor, or a trusted colleague. Asking is not weakness — it is wisdom." },
+    { icon: "🕯", title: "One small thing", body: "Not a full task. Just one tiny thing: drink water, open a window, reply to one message." },
+    { icon: "🧸", title: "Be gentle with yourself", body: "You'd tell a struggling friend to rest and recover. Give yourself the same advice right now." },
+    { icon: "🌅", title: "This will shift", body: "Burnout feels permanent but isn't. Every person who's been here has found their way back." },
+  ],
+};
+
+// ════════════════════════════════════════
+// STATE
+// ════════════════════════════════════════
+let currentUser = null;
+let currentMood = null;
+let currentShift = null;
+let insightTimer = null;
+let insightIndex = 0;
+let typewriterTimer = null;
+let particleAnim = null;
+let particles = [];
+
+// ════════════════════════════════════════
+// AUTH
+// ════════════════════════════════════════
+function doLogin() {
+  const dfid  = document.getElementById('l-dfid').value.trim();
+  const name  = document.getElementById('l-name').value.trim();
+  const email = document.getElementById('l-email').value.trim();
+  const dept  = document.getElementById('l-dept').value;
+  if (!dfid || !name || !email || !dept) { alert('Please fill in all fields.'); return; }
+  const user = { dfid, name, email, dept };
+  localStorage.setItem('moodmate_user', JSON.stringify(user));
+  startApp(user);
+}
+
+function changeUser() {
+  localStorage.removeItem('moodmate_user');
+  currentUser = null;
+  currentMood = null;
+  document.getElementById('main-header').style.display = 'none';
+  document.getElementById('main-app').style.display = 'none';
+  document.getElementById('login-overlay').style.display = 'flex';
+}
+
+function startApp(user) {
+  currentUser = user;
+  document.getElementById('login-overlay').style.display = 'none';
+  document.getElementById('main-header').style.display = 'flex';
+  document.getElementById('main-app').style.display = 'block';
+  document.getElementById('user-display-name').textContent = user.name.split(' ')[0];
+  buildMoodButtons();
+  autoSelectShiftByTime();
+}
+
+function autoSelectShiftByTime() {
+  const h = new Date().getHours();
+  let shift = h < 12 ? 'Morning' : h < 17 ? 'Afternoon' : 'Night';
+  const btns = document.querySelectorAll('.shift-btn');
+  btns.forEach(b => { if (b.dataset.shift === shift) { b.classList.add('active'); currentShift = shift; } });
+}
+
+// ════════════════════════════════════════
+// MOOD BUTTONS
+// ════════════════════════════════════════
+function buildMoodButtons() {
+  const row = document.getElementById('mood-row');
+  row.innerHTML = '';
+  MOODS.forEach(m => {
+    const btn = document.createElement('button');
+    btn.className = 'mood-btn';
+    btn.style.setProperty('--mood-color', m.color);
+    btn.style.setProperty('--mood-rgb', m.rgb);
+    btn.innerHTML = `<span class="mood-emoji">${m.emoji}</span><span class="mood-label">${m.label}</span><span class="mood-score">Score ${m.score}</span>`;
+    btn.onclick = () => selectMood(m, btn);
+    row.appendChild(btn);
+  });
+}
+
+function selectMood(mood, btn) {
+  document.querySelectorAll('.mood-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  currentMood = mood;
+  applyMoodTheme(mood);
+  updateButterfly(mood);
+  updateInsights(mood);
+  updateCoaching(mood);
+}
+
+// ════════════════════════════════════════
+// THEME
+// ════════════════════════════════════════
+function applyMoodTheme(mood) {
+  document.documentElement.style.setProperty('--accent', mood.color);
+  document.documentElement.style.setProperty('--accent-rgb', mood.rgb);
+  // flap speed
+  const speeds = { 5: '0.45s', 4: '0.75s', 3: '1.0s', 2: '1.6s', 1: '2.4s' };
+  document.documentElement.style.setProperty('--flap-dur', speeds[mood.score]);
+}
+
+// ════════════════════════════════════════
+// BUTTERFLY
+// ════════════════════════════════════════
+function updateButterfly(mood) {
+  // Color transition on SVG fills
+  const ids = ['wl-u-fill', 'wl-l-fill', 'wr-u-fill', 'wr-l-fill'];
+  ids.forEach((id, i) => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    const opacity = i % 2 === 0 ? '0.9' : '0.7';
+    el.style.transition = 'fill 0.6s ease';
+    el.setAttribute('fill', mood.color);
+    el.setAttribute('opacity', opacity);
+  });
+  // Antennae + body accent
+  const antennae = document.querySelectorAll('#butterfly-svg circle[r="2.5"]');
+  antennae.forEach(a => { a.style.transition = 'fill 0.6s ease'; a.setAttribute('fill', mood.color); });
+
+  document.getElementById('tagline').textContent = mood.tagline;
+  document.getElementById('tagline-sub').textContent = mood.sub;
+  document.getElementById('butterfly-card').classList.add('has-mood');
+
+  // Particles
+  startParticles(mood.color);
+}
+
+// ════════════════════════════════════════
+// PARTICLES
+// ════════════════════════════════════════
+function startParticles(colorHex) {
+  const canvas = document.getElementById('particle-canvas');
+  const ctx = canvas.getContext('2d');
+  const card = document.getElementById('butterfly-card');
+  
+  function resize() {
+    canvas.width = card.offsetWidth;
+    canvas.height = card.offsetHeight;
+  }
+  resize();
+
+  if (particleAnim) cancelAnimationFrame(particleAnim);
+  particles = [];
+
+  for (let i = 0; i < 28; i++) {
+    particles.push({
+      x: Math.random() * canvas.width,
+      y: Math.random() * canvas.height,
+      r: Math.random() * 3 + 1,
+      vx: (Math.random() - 0.5) * 0.5,
+      vy: -(Math.random() * 0.8 + 0.2),
+      alpha: Math.random() * 0.6 + 0.2,
+      life: Math.random(),
+    });
+  }
+
+  const rgb = hexToRgb(colorHex);
+
+  function draw() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    particles.forEach(p => {
+      p.x += p.vx;
+      p.y += p.vy;
+      p.life -= 0.004;
+      if (p.life <= 0 || p.y < -10) {
+        p.x = Math.random() * canvas.width;
+        p.y = canvas.height + 5;
+        p.life = 0.8 + Math.random() * 0.2;
+        p.alpha = Math.random() * 0.5 + 0.2;
+      }
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(${rgb},${p.alpha * p.life})`;
+      ctx.fill();
+    });
+    particleAnim = requestAnimationFrame(draw);
+  }
+  draw();
+}
+
+function hexToRgb(hex) {
+  const r = parseInt(hex.slice(1,3),16);
+  const g = parseInt(hex.slice(3,5),16);
+  const b = parseInt(hex.slice(5,7),16);
+  return `${r},${g},${b}`;
+}
+
+// ════════════════════════════════════════
+// INSIGHTS
+// ════════════════════════════════════════
+function updateInsights(mood) {
+  document.getElementById('insight-empty').style.display = 'none';
+  document.getElementById('insight-content').style.display = 'block';
+  document.getElementById('insight-container').classList.add('has-mood');
+
+  // Typewriter quote
+  typewriterText(QUOTES[mood.score], document.getElementById('quote-text'));
+
+  // Build dots
+  const cards = INSIGHTS[mood.score];
+  const dotsEl = document.getElementById('progress-dots');
+  dotsEl.innerHTML = '';
+  cards.forEach((_, i) => {
+    const d = document.createElement('div');
+    d.className = 'p-dot' + (i === 0 ? ' active' : '');
+    d.id = `dot-${i}`;
+    dotsEl.appendChild(d);
+  });
+
+  insightIndex = 0;
+  showInsightCard(mood.score, 0);
+
+  if (insightTimer) clearInterval(insightTimer);
+  insightTimer = setInterval(() => {
+    insightIndex = (insightIndex + 1) % cards.length;
+    showInsightCard(mood.score, insightIndex);
+  }, 5000);
+}
+
+function showInsightCard(score, idx) {
+  const card = document.getElementById('insight-card');
+  card.classList.add('fade-out');
+  setTimeout(() => {
+    const data = INSIGHTS[score][idx];
+    document.getElementById('ic-icon').textContent = data.icon;
+    document.getElementById('ic-title').textContent = data.title;
+    document.getElementById('ic-body').textContent = data.body;
+    card.classList.remove('fade-out');
+    // Update dots
+    document.querySelectorAll('.p-dot').forEach((d,i) => d.classList.toggle('active', i === idx));
+  }, 400);
+}
+
+function typewriterText(text, el) {
+  if (typewriterTimer) clearInterval(typewriterTimer);
+  el.innerHTML = '';
+  let i = 0;
+  const cursor = document.createElement('span');
+  cursor.className = 'quote-cursor';
+  el.appendChild(cursor);
+  typewriterTimer = setInterval(() => {
+    if (i < text.length) {
+      el.insertBefore(document.createTextNode(text[i]), cursor);
+      i++;
+    } else {
+      clearInterval(typewriterTimer);
+      setTimeout(() => cursor.style.display = 'none', 1200);
+    }
+  }, 28);
+}
+
+// ════════════════════════════════════════
+// COACHING
+// ════════════════════════════════════════
+const coachingData = {
+  5: {
+    grow: ["Goal — What big thing will you move today while you have this energy?", "Reality — You're at peak. What's the one blocker you've been tolerating?", "Options — List 3 high-impact actions only you can uniquely do.", "Will — Commit to the highest-leverage option. Start in the next 10 minutes."],
+    sit:  ["You have the energy to lead — volunteer to help a struggling teammate today.", "Use surplus capacity to document processes or create resources for others.", "Stretch yourself: propose the idea you've been holding back.", "Mentor or pair with a junior colleague — teaching cements your own knowledge."],
+    pos:  ["Your energy today is an asset to the whole team — it shows.", "Notice how your enthusiasm affects the people around you positively.", "Celebrate the state you've created — this didn't happen by accident.", "Acknowledge the habits (sleep, exercise, connection) that produced this feeling."],
+  },
+  4: {
+    grow: ["Goal — What focused output would make today a clear win?", "Reality — What interruptions typically derail your flow, and are they present now?", "Options — How can you extend or protect this focus state for the next hour?", "Will — Commit to one uninterrupted work block. Schedule it right now."],
+    sit:  ["Block your calendar for deep work — protect this focus with structure.", "Decline or defer non-urgent meetings so you don't break your flow.", "Communicate your focus mode to your team — they will respect it.", "Use this state to tackle your most cognitively demanding task first."],
+    pos:  ["Your ability to focus is a genuine skill — not everyone can access it.", "Notice how much ground you cover when you're fully in it.", "This focus state came from discipline and good choices — own that.", "Share your focus techniques with a colleague who struggles with distraction."],
+  },
+  3: {
+    grow: ["Goal — What would make today feel 'good enough' by end of day?", "Reality — What's blocking you from feeling more energized right now?", "Options — What's one small, low-effort action that could shift your momentum?", "Will — Pick the smallest useful thing and do it in the next 5 minutes."],
+    sit:  ["A brief social connection can shift a neutral day — reach out to a colleague.", "Identify the single most important task and do only that thing first.", "Take a 10-minute outdoor break — natural light genuinely improves mood.", "Acknowledge that neutral days are where most professional growth actually happens."],
+    pos:  ["Showing up on a neutral day is its own kind of strength.", "Your consistency through average days is what enables exceptional ones.", "Notice what you've already accomplished today, even if it feels small.", "Steady, reliable performance is what teams are actually built on."],
+  },
+  2: {
+    grow: ["Goal — What is the single most important thing to finish today (not the whole list)?", "Reality — What specifically is driving the stress? Name it clearly.", "Options — What can be delegated, deferred, or dropped from today's list?", "Will — Tell one person what's weighing on you before end of shift."],
+    sit:  ["Talk to your supervisor about load before it becomes a crisis.", "Practice saying 'I need to prioritize — can this wait until tomorrow?'", "Schedule a 5-minute decompression break every hour — set the alarm now.", "Identify one task to hand off or delay — it's there if you look."],
+    pos:  ["The fact that you're stressed means you genuinely care — that matters.", "You have navigated difficult days before and you're still standing.", "Every hour you manage through stress builds real professional resilience.", "Acknowledge yourself for checking in today instead of pushing through alone."],
+  },
+  1: {
+    grow: ["Goal — What is the absolute minimum you need to do today to be okay?", "Reality — How long have you been feeling this way? Say it honestly.", "Options — Who can you ask for help — a colleague, supervisor, or HR today?", "Will — Make one request for support before the end of this shift."],
+    sit:  ["Contact HR or your Employee Assistance Program — this is what they exist for.", "Talk to your supervisor about temporarily reducing your task load.", "It is completely appropriate to ask for a mental health day.", "Burnout is a workplace safety issue — reporting it protects you and others."],
+    pos:  ["Getting through burnout takes immense strength — you have that strength.", "The fact that you're checking in right now is an act of self-awareness.", "You've been carrying a lot. That's not weakness — it's evidence of dedication.", "Recovery is possible. Every person who has been here has found their way back."],
+  },
+};
+
+function updateCoaching(mood) {
+  const data = coachingData[mood.score];
+  ['grow','situational','positive'].forEach(tab => {
+    const key = tab === 'grow' ? 'grow' : tab === 'situational' ? 'sit' : 'pos';
+    const steps = document.getElementById(tab === 'grow' ? 'grow-steps' : tab === 'situational' ? 'sit-steps' : 'pos-steps');
+    steps.innerHTML = data[key].map(s => `<li>${s}</li>`).join('');
+  });
+}
+
+function switchTab(name) {
+  document.querySelectorAll('.tab-btn').forEach((b,i) => {
+    const names = ['grow','situational','positive'];
+    b.classList.toggle('active', names[i] === name);
+  });
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+}
+
+// ════════════════════════════════════════
+// SHIFT SELECTION
+// ════════════════════════════════════════
+function selectShift(btn) {
+  document.querySelectorAll('.shift-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  currentShift = btn.dataset.shift;
+}
+
+// ════════════════════════════════════════
+// SUBMIT CHECK-IN
+// ════════════════════════════════════════
+async function submitCheckin() {
+  if (!currentMood) { showStatus('Please select a mood first.', 'error'); return; }
+  if (!currentShift) { showStatus('Please select a shift.', 'error'); return; }
+
+  const btn = document.getElementById('submit-btn');
+  btn.disabled = true;
+  btn.textContent = 'Submitting...';
+  showStatus('', '');
+
+  const now = new Date();
+  const weekNum = getWeekNumber(now);
+  const row = {
+    'Timestamp':    now.toISOString(),
+    'Dayforce ID':  currentUser.dfid,
+    'Full Name':    currentUser.name,
+    'Email':        currentUser.email,
+    'Department':   currentUser.dept,
+    'Shift':        currentShift,
+    'Mood':         currentMood.label,
+    'Mood Score':   currentMood.score,
+    'Note':         document.getElementById('note-area').value.trim(),
+    'Date':         now.toLocaleDateString('en-CA'),
+    'Week Number':  weekNum,
+    'Month':        now.toLocaleString('default', { month: 'long', year: 'numeric' }),
+  };
+
+  try {
+    await writeToSharePoint(row);
+    showStatus('✓ Check-in submitted successfully!', 'success');
+    launchConfetti();
+    document.getElementById('note-area').value = '';
+  } catch (e) {
+    console.error(e);
+    showStatus('Could not reach SharePoint. Check your network and config.', 'error');
+  }
+
+  btn.disabled = false;
+  btn.textContent = 'Submit Check-In 🦋';
+}
+
+async function writeToSharePoint(row) {
+  const { siteUrl, excelRelUrl, sheetName } = MOODMATE_CONFIG;
+  const fileUrl = siteUrl + `/_api/web/getFileByServerRelativeUrl('${excelRelUrl}')/$value`;
+
+  // Fetch existing workbook
+  const getResp = await fetch(fileUrl, {
+    headers: { 'Accept': 'application/vnd.ms-excel', 'X-RequestDigest': await getRequestDigest(siteUrl) },
+    credentials: 'include',
+  });
+  if (!getResp.ok) throw new Error('Failed to fetch workbook: ' + getResp.status);
+
+  const ab = await getResp.arrayBuffer();
+  const wb = XLSX.read(ab, { type: 'array', cellDates: true });
+
+  let ws = wb.Sheets[sheetName];
+  if (!ws) {
+    ws = XLSX.utils.aoa_to_sheet([Object.keys(row)]);
+    XLSX.utils.book_append_sheet(wb, ws, sheetName);
+  }
+
+  const existingData = XLSX.utils.sheet_to_json(ws, { defval: '' });
+  existingData.push(row);
+
+  const newWs = XLSX.utils.json_to_sheet(existingData, { header: Object.keys(row) });
+  wb.Sheets[sheetName] = newWs;
+
+  const updatedAb = XLSX.write(wb, { type: 'array', bookType: 'xlsx' });
+
+  const digest = await getRequestDigest(siteUrl);
+  const putResp = await fetch(fileUrl, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/vnd.ms-excel', 'X-RequestDigest': digest, 'X-HTTP-Method': 'PUT' },
+    body: new Blob([updatedAb]),
+    credentials: 'include',
+  });
+  if (!putResp.ok) throw new Error('Failed to save workbook: ' + putResp.status);
+}
+
+async function getRequestDigest(siteUrl) {
+  const resp = await fetch(siteUrl + '/_api/contextinfo', {
+    method: 'POST',
+    headers: { 'Accept': 'application/json;odata=verbose', 'Content-Type': 'application/json;odata=verbose' },
+    credentials: 'include',
+  });
+  const json = await resp.json();
+  return json.d.GetContextWebInformation.FormDigestValue;
+}
+
+function getWeekNumber(d) {
+  d = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+  d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay() || 7));
+  const y = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+  return Math.ceil((((d - y) / 86400000) + 1) / 7);
+}
+
+function showStatus(msg, type) {
+  const el = document.getElementById('submit-status');
+  el.textContent = msg;
+  el.className = 'submit-status ' + type;
+}
+
+// ════════════════════════════════════════
+// CONFETTI
+// ════════════════════════════════════════
+function launchConfetti() {
+  const canvas = document.getElementById('confetti-canvas');
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+  const ctx = canvas.getContext('2d');
+
+  const colors = ['#22C55E','#3B82F6','#F59E0B','#EC4899','#8B5CF6','#F97316','#EF4444'];
+  const pieces = [];
+  for (let i = 0; i < 140; i++) {
+    pieces.push({
+      x: Math.random() * canvas.width,
+      y: -10 - Math.random() * 200,
+      r: Math.random() * 5 + 3,
+      d: Math.random() * 140,
+      color: colors[Math.floor(Math.random() * colors.length)],
+      tilt: Math.floor(Math.random() * 10) - 10,
+      tiltAngle: 0,
+      tiltAngleInc: Math.random() * 0.07 + 0.05,
+    });
+  }
+
+  let frame = 0;
+  function draw() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    pieces.forEach(p => {
+      p.tiltAngle += p.tiltAngleInc;
+      p.y += (Math.cos(frame / 30 + p.d) + 2.5) * 1.5;
+      p.tilt = Math.sin(p.tiltAngle) * 12;
+      ctx.beginPath();
+      ctx.lineWidth = p.r / 2;
+      ctx.strokeStyle = p.color;
+      ctx.moveTo(p.x + p.tilt + p.r / 4, p.y);
+      ctx.lineTo(p.x + p.tilt, p.y + p.tilt + p.r * 1.25);
+      ctx.stroke();
+    });
+    frame++;
+    if (frame < 160) requestAnimationFrame(draw);
+    else ctx.clearRect(0, 0, canvas.width, canvas.height);
+  }
+  draw();
+}
+
+// ════════════════════════════════════════
+// INIT
+// ════════════════════════════════════════
+(function init() {
+  const saved = localStorage.getItem('moodmate_user');
+  if (saved) {
+    try { startApp(JSON.parse(saved)); } catch(e) { localStorage.removeItem('moodmate_user'); }
+  }
+})();
+</script>
+</body>
+</html>
