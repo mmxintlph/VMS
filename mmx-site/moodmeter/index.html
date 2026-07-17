@@ -1114,9 +1114,46 @@ async function clearFileHandle() {
 // INIT
 // ════════════════════════════════════════
 (function init() {
+  // 1. Check for saved profile first
   const saved = localStorage.getItem('moodmate_user');
   if (saved) {
-    try { startApp(JSON.parse(saved)); } catch(e) { localStorage.removeItem('moodmate_user'); }
+    try { startApp(JSON.parse(saved)); return; } catch(e) { localStorage.removeItem('moodmate_user'); }
+  }
+
+  // 2. Try to auto-login from URL params passed by launch_moodmate.bat
+  //    URL format: ?user=jcua&domain=mmx&name=Juan+Cua&email=jcua@mmx.com&dept=Information+Technology
+  const params = new URLSearchParams(window.location.search);
+  const winUser   = params.get('user')   || '';
+  const winDomain = params.get('domain') || '';
+  const winName   = params.get('name')   || '';
+  const winEmail  = params.get('email')  || '';
+  const winDept   = params.get('dept')   || '';
+
+  if (winUser) {
+    // Pre-fill Dayforce ID with Windows username (strip domain prefix if present)
+    const cleanUser = winUser.replace(/^.*\\/, ''); // strip "mmx\" if included
+    document.getElementById('l-dfid').value = cleanUser;
+
+    if (winName)  document.getElementById('l-name').value  = winName;
+    if (winEmail) document.getElementById('l-email').value = winEmail;
+    if (winDept) {
+      const sel = document.getElementById('l-dept');
+      for (let i = 0; i < sel.options.length; i++) {
+        if (sel.options[i].text.toLowerCase() === winDept.toLowerCase() ||
+            sel.options[i].value.toLowerCase() === winDept.toLowerCase()) {
+          sel.selectedIndex = i; break;
+        }
+      }
+    }
+
+    // If all required fields were supplied via URL, auto-login silently
+    if (winUser && winName && winEmail && winDept) {
+      const user = { dfid: cleanUser, name: winName, email: winEmail, dept: winDept };
+      localStorage.setItem('moodmate_user', JSON.stringify(user));
+      startApp(user);
+      return;
+    }
+    // Otherwise show the form pre-filled — user just fills the missing fields
   }
 })();
 </script>
