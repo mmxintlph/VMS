@@ -54,7 +54,11 @@ table{width:100%;border-collapse:collapse;font-size:.84rem}
 th{text-align:left;padding:9px 12px;background:#f8f8f8;font-weight:700;border-bottom:2px solid var(--border);white-space:nowrap}
 td{padding:9px 12px;border-bottom:1px solid #f0f0f0;vertical-align:middle}
 tr:hover td{background:#fafafa}
-.tbl-wrap{overflow-x:auto}
+.tbl-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+.tbl-wrap table{min-width:100%;border-collapse:collapse}
+.tbl-wrap th,.tbl-wrap td{white-space:nowrap;padding:8px 12px;font-size:.83rem;border-bottom:1px solid var(--border)}
+.tbl-wrap th{background:var(--bg2,#f9fafb);font-weight:600;position:sticky;top:0;z-index:1}
+.tbl-wide{max-height:520px;overflow-y:auto;border:1px solid var(--border);border-radius:8px}
 .stats{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:20px}
 .sc{background:var(--card);border:2px solid var(--border);border-radius:8px;padding:14px;text-align:center;cursor:pointer;transition:border-color .15s,box-shadow .15s,transform .1s}
 .sc:hover{box-shadow:0 4px 12px rgba(0,0,0,.1);transform:translateY(-1px)}
@@ -382,8 +386,11 @@ tr:hover td{background:#fafafa}
       </div>
 
       <div class="card">
-        <h2>All Users</h2>
-        <div id="empTable"></div>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+          <h2 style="margin:0">All Users</h2>
+          <span id="empCount" style="font-size:.8rem;color:var(--text2)"></span>
+        </div>
+        <div class="tbl-wide" id="empTable"></div>
       </div>
     </div>
 
@@ -918,7 +925,9 @@ function updateRoleDesc() {
 function renderEmps() {
   var el = document.getElementById('empTable');
   if (!DB.users.length) { el.innerHTML = '<p style="color:var(--text2);text-align:center;padding:20px">No users.</p>'; return; }
-  var html = '<div class="tbl-wrap"><table><thead><tr><th>Username</th><th>Dayforce ID</th><th>Name</th><th>Email</th><th>Department</th><th>Role</th><th>Supervisor</th><th>Status</th><th>Actions</th></tr></thead><tbody>';
+  var countEl = document.getElementById('empCount');
+  if (countEl) { countEl.textContent = DB.users.length + ' user' + (DB.users.length !== 1 ? 's' : ''); }
+  var html = '<div class="tbl-wrap"><table style="min-width:900px"><thead><tr><th>Username</th><th>Dayforce ID</th><th>Name</th><th>Email</th><th>Department</th><th>Role</th><th>Supervisor</th><th>Status</th><th>Actions</th></tr></thead><tbody>';
   for (var i = 0; i < DB.users.length; i++) {
     var u = DB.users[i];
     var isSelf = (currentUser && u.id === currentUser.id);
