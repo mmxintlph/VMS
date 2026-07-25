@@ -190,7 +190,7 @@ tr:hover td{background:#fafafa}
         <div id="regEmailHint" style="font-size:.75rem;margin-top:4px;min-height:18px"></div>
       </div>
       <div class="fg"><label>Department <span style="color:#ef4444">*</span></label>
-        <input id="regDept" placeholder="Auto-filled from email roster" required readonly
+        <input id="regDept" placeholder="Auto-filled from email roster" readonly
           style="background:var(--bg2,#f9fafb);color:var(--text2);cursor:not-allowed">
         <div style="font-size:.72rem;color:#9ca3af;margin-top:3px">Populated automatically when your email is recognised.</div>
         <div id="regSupHint" style="font-size:.75rem;margin-top:4px;min-height:18px"></div>
@@ -374,64 +374,20 @@ tr:hover td{background:#fafafa}
 
     <!-- USERS TAB (system_admin only) -->
     <div id="tabUsers" style="display:none">
-      <div class="card">
-        <h2>Add User</h2>
-        <div id="empAddMsg"></div>
-        <form onsubmit="addEmp(event)">
-          <div class="row2">
-            <div class="fg"><label>Username</label><input id="nEid" placeholder="EMP005" required></div>
-            <div class="fg"><label>Full Name</label><input id="nName" placeholder="Jane Doe" required></div>
-            <div class="fg"><label>Email</label><input id="nEmail" type="email" placeholder="jane@mmx.com" required></div>
-            <div class="fg"><label>Department</label><input id="nDept" placeholder="Operations" required></div>
-            <div class="fg"><label>Password (min 8)</label><input id="nPw" type="password" required minlength="8"></div>
-            <div class="fg">
-              <label>Role</label>
-              <select id="nRole" onchange="updateRoleDesc()">
-                <option value="employee">Employee</option>
-                <option value="supervisor">Supervisor</option>
-                <option value="manager">Manager</option>
-                <option value="system_admin">System Admin</option>
-              </select>
-              <div class="role-desc" id="roleDesc"></div>
-            </div>
-            <div class="fg">
-              <label>Reports To (optional)</label>
-              <select id="nReportsTo"><option value="">-- None --</option></select>
-            </div>
-          </div>
-          <button type="submit" class="btn btn-p">Add User</button>
-        </form>
-      </div>
+
       <div class="card" id="pendingCard" style="display:none">
         <h2>&#9203; Pending Registrations</h2>
         <p style="font-size:.85rem;color:var(--text2);margin-bottom:10px">These users registered but are not yet active. Activate or delete them.</p>
         <div id="pendingTable"></div>
       </div>
-      <div class="card">
-        <h2>Import Users from Excel</h2>
-        <p style="font-size:.85rem;color:var(--text2);margin-bottom:12px">
-          Upload an <strong>.xlsx</strong> file with columns in this order:
-          <span style="font-family:monospace;background:#f3f4f6;padding:2px 6px;border-radius:3px;font-size:.82rem">
-            Username, Full Name, Email, Department, Role, Password, Reports To (username, optional)
-          </span><br>
-          Row 1 must be a header row. Role must be one of: <em>employee, supervisor, manager, system_admin</em>.
-        </p>
-        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
-          <label for="xlsxFile" class="btn btn-o" style="cursor:pointer;margin:0">
-            &#128194; Choose Excel File
-            <input type="file" id="xlsxFile" accept=".xlsx,.xls" style="display:none" onchange="handleXlsxImport(event)">
-          </label>
-          <span id="xlsxFileName" style="font-size:.85rem;color:var(--text2)">No file chosen</span>
-        </div>
-        <div id="xlsxMsg" style="margin-top:12px"></div>
-        <div id="xlsxPreview" style="margin-top:12px"></div>
-      </div>
+
       <div class="card">
         <h2>All Users</h2>
         <div id="empTable"></div>
       </div>
     </div>
 
+    <div id="empAddMsg" style="display:none"></div>
     <!-- ORG CHART TAB (manager / supervisor) -->
     <div id="tabOrg" style="display:none">
       <div class="card">
@@ -962,7 +918,7 @@ function updateRoleDesc() {
 function renderEmps() {
   var el = document.getElementById('empTable');
   if (!DB.users.length) { el.innerHTML = '<p style="color:var(--text2);text-align:center;padding:20px">No users.</p>'; return; }
-  var html = '<div class="tbl-wrap"><table><thead><tr><th>Username</th><th>Name</th><th>Department</th><th>Role</th><th>Reports To</th><th>Status</th><th>Actions</th></tr></thead><tbody>';
+  var html = '<div class="tbl-wrap"><table><thead><tr><th>Username</th><th>Dayforce ID</th><th>Name</th><th>Email</th><th>Department</th><th>Role</th><th>Supervisor</th><th>Status</th><th>Actions</th></tr></thead><tbody>';
   for (var i = 0; i < DB.users.length; i++) {
     var u = DB.users[i];
     var isSelf = (currentUser && u.id === currentUser.id);
@@ -972,7 +928,9 @@ function renderEmps() {
     var col = u.is_active ? '#065f46' : '#991b1b';
     html += '<tr>';
     html += '<td><strong>'+esc(u.employee_id)+'</strong></td>';
-    html += '<td>'+esc(u.full_name)+'<br><small style="color:var(--text2)">'+esc(u.email)+'</small></td>';
+    html += '<td style="font-size:.83rem">'+esc(u.dayforce_id||'&mdash;')+'</td>';
+    html += '<td>'+esc(u.full_name)+'</td>';
+    html += '<td style="font-size:.78rem;color:var(--text2)">'+esc(u.email)+'</td>';
     html += '<td style="font-size:.83rem">'+esc(u.department)+'</td>';
     html += '<td><span class="badge b-'+u.role+'">'+(ROLE_LABELS[u.role]||u.role)+'</span></td>';
     html += '<td style="font-size:.83rem">'+mgrName+'</td>';
@@ -1495,9 +1453,10 @@ function doRegister(e) {
   var pw2    = document.getElementById('regPw2').value;
   var msg    = document.getElementById('regMsg');
 
-  if (!uname || !fname || !email || !dept) {
-    msg.innerHTML='<div class="al ae">Please fill in all required fields.</div>'; return;
-  }
+  if (!uname) { msg.innerHTML='<div class="al ae">Username is required.</div>'; return; }
+  if (!fname)  { msg.innerHTML='<div class="al ae">Full Name is required.</div>'; return; }
+  if (!email)  { msg.innerHTML='<div class="al ae">Email is required.</div>'; return; }
+  if (!dept)   { msg.innerHTML='<div class="al ae">Department could not be auto-filled. Make sure your email is in the roster (e.g. jrizal@med-metrix.com).</div>'; return; }
   if (pw.length < 8) {
     msg.innerHTML='<div class="al ae">Password must be at least 8 characters.</div>'; return;
   }
