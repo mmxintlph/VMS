@@ -1513,6 +1513,7 @@ function doRegister(e) {
     }
   }
   // Add as pending employee — is_active: false so they cannot log in yet
+  var dayforceId = document.getElementById('regDayforceId') ? document.getElementById('regDayforceId').value.trim() : '';
   var supEmail = ROSTER_SUP_EMAIL[email] || '';
   // Try to resolve supervisor account in DB by email
   var supUserId = null;
