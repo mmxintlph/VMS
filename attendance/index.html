@@ -171,6 +171,7 @@ tr:hover td{background:#fafafa}
       <h1 style="font-size:1.25rem;font-weight:800;margin-bottom:4px">Request Access</h1>
       <p style="color:var(--text2);font-size:.82rem">Your account will be reviewed by an admin.</p>
     </div>
+    <div id="regFormBody">
     <div id="regMsg"></div>
     <form onsubmit="doRegister(event)">
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
@@ -200,7 +201,24 @@ tr:hover td{background:#fafafa}
         <input type="password" id="regPw2" placeholder="Repeat password" required></div>
       <button type="submit" class="btn btn-p" style="width:100%;padding:12px;justify-content:center">Submit Request</button>
     </form>
-    <p style="margin-top:14px;font-size:.75rem;text-align:center">
+    </div><!-- end regFormBody -->
+
+    <!-- SUCCESS SCREEN -->
+    <div id="regSuccess" style="display:none;text-align:center;padding:10px 0">
+      <div style="font-size:3rem;margin-bottom:12px">&#9989;</div>
+      <h2 style="font-size:1.1rem;font-weight:800;margin-bottom:8px;color:#16a34a">Request Submitted!</h2>
+      <p style="font-size:.88rem;color:var(--text2);margin-bottom:6px">
+        Hi <strong id="regSuccessName"></strong>, your access request has been received.
+      </p>
+      <p style="font-size:.83rem;color:var(--text2);margin-bottom:20px">
+        An administrator will review and activate your account. You&apos;ll be able to sign in once approved.
+      </p>
+      <button class="btn btn-p" style="width:100%;padding:12px;justify-content:center" onclick="showLogin()">
+        &#8592; Back to Sign In
+      </button>
+    </div>
+
+    <p style="margin-top:14px;font-size:.75rem;text-align:center" id="regBackLink">
       <a href="#" onclick="showLogin()" style="color:var(--primary);text-decoration:none">&#8592; Back to Sign In</a>
     </p>
   </div>
@@ -1456,6 +1474,8 @@ function showRegister() {
   document.getElementById('viewLogin').style.display    = 'none';
   document.getElementById('viewRegister').style.display = '';
   document.getElementById('regMsg').innerHTML = '';
+  document.getElementById('regFormBody').style.display = 'block';
+  document.getElementById('regSuccess').style.display  = 'none';
   ['regUser','regName','regEmail','regDept','regDayforceId','regPw','regPw2'].forEach(function(id){ var el=document.getElementById(id); if(el){el.value=''; el._manuallyEdited=false;} });
   document.getElementById('regEmailHint').innerHTML='';
   document.getElementById('regSupHint').innerHTML='';
