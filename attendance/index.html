@@ -1,0 +1,1205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#1a1d21">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%231164A3'/><path d='M10 22v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2' stroke='white' stroke-width='2.5' fill='none' stroke-linecap='round'/><circle cx='16' cy='10' r='3.5' stroke='white' stroke-width='2.5' fill='none'/></svg>">
+<meta property="og:title" content="Attendance Notifier">
+<meta property="og:description" content="Employee attendance notification platform">
+<meta property="og:type" content="website">
+<title>Attendance Notifier &mdash; MMX International</title>
+<style>
+:root{color-scheme:light;--blue:#1164A3;--bd:#0d5091;--border:#e8e8e8;--bg:#f4f4f4;--card:#fff;--text:#1d1c1d;--text2:#616061}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+.nav{background:#1a1d21;color:#fff;padding:13px 20px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
+.nav-brand{font-size:1rem;font-weight:800;display:flex;align-items:center;gap:8px}
+.nav-right{display:flex;align-items:center;gap:8px}
+.nav-user{font-size:.8rem;opacity:.65;white-space:nowrap}
+.nav-role{font-size:.7rem;padding:2px 7px;border-radius:3px;font-weight:700;text-transform:uppercase}
+.nr-system_admin{background:#1164A3;color:#fff}
+.nr-manager{background:#7C3085;color:#fff}
+.nr-supervisor{background:#065f46;color:#fff}
+.nr-employee{background:#374151;color:#fff}
+.nav-btn{color:rgba(255,255,255,.7);font-size:.83rem;padding:5px 10px;border-radius:4px;cursor:pointer;border:none;background:none}
+.nav-btn:hover{background:rgba(255,255,255,.1);color:#fff}
+.con{max-width:900px;margin:0 auto;padding:24px 16px}
+.card{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:24px;margin-bottom:20px;box-shadow:0 1px 4px rgba(0,0,0,.05)}
+.card h2{font-size:1.05rem;font-weight:800;margin-bottom:16px}
+label{display:block;font-size:.78rem;font-weight:700;text-transform:uppercase;letter-spacing:.45px;color:var(--text2);margin-bottom:5px}
+input,select,textarea{width:100%;padding:10px 12px;border:1.5px solid #ddd;border-radius:5px;font-size:.93rem;outline:none;background:#fff;font-family:inherit;color:var(--text)}
+input:focus,select:focus,textarea:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(17,100,163,.12)}
+input[readonly]{background:#f8f8f8;cursor:default}
+.fg{margin-bottom:15px}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px}
+.btn{padding:10px 20px;border-radius:5px;font-size:.9rem;font-weight:700;cursor:pointer;border:none;display:inline-flex;align-items:center;gap:6px}
+.btn:disabled{opacity:.6;cursor:not-allowed}
+.btn-p{background:var(--blue);color:#fff}.btn-p:hover:not(:disabled){background:var(--bd)}
+.btn-o{background:#fff;border:1.5px solid #ddd;color:var(--text)}.btn-o:hover:not(:disabled){background:#f8f8f8}
+.btn-sm{padding:5px 10px;font-size:.75rem}
+.btn-danger{background:#fee2e2;border:1.5px solid #fca5a5;color:#991b1b}.btn-danger:hover{background:#fecaca}
+.al{padding:11px 14px;border-radius:6px;margin-bottom:14px;font-size:.88rem}
+.ao{background:#d1fae5;border:1px solid #6ee7b7;color:#065f46}
+.ae{background:#fee2e2;border:1px solid #fca5a5;color:#991b1b}
+.ai{background:#dbeafe;border:1px solid #93c5fd;color:#1e40af}
+.aw{background:#fef3c7;border:1px solid #fcd34d;color:#92400e}
+.badge{display:inline-block;padding:2px 8px;border-radius:3px;font-size:.72rem;font-weight:700;text-transform:uppercase}
+.b-late{background:#fef3c7;color:#92400e}.b-absent{background:#fee2e2;color:#991b1b}.b-emergency{background:#ede9fe;color:#5b21b6}
+.b-pending{background:#e8e8e8;color:#616061}.b-approved{background:#d1fae5;color:#065f46}.b-rejected{background:#fee2e2;color:#991b1b}
+.b-system_admin{background:#dbeafe;color:#1e40af}.b-manager{background:#ede9fe;color:#5b21b6}
+.b-supervisor{background:#d1fae5;color:#065f46}.b-employee{background:#f3f4f6;color:#374151}
+table{width:100%;border-collapse:collapse;font-size:.84rem}
+th{text-align:left;padding:9px 12px;background:#f8f8f8;font-weight:700;border-bottom:2px solid var(--border);white-space:nowrap}
+td{padding:9px 12px;border-bottom:1px solid #f0f0f0;vertical-align:middle}
+tr:hover td{background:#fafafa}
+.tbl-wrap{overflow-x:auto}
+.stats{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:20px}
+.sc{background:var(--card);border:2px solid var(--border);border-radius:8px;padding:14px;text-align:center;cursor:pointer;transition:border-color .15s,box-shadow .15s,transform .1s}
+.sc:hover{box-shadow:0 4px 12px rgba(0,0,0,.1);transform:translateY(-1px)}
+.sc.active{border-color:var(--blue);box-shadow:0 0 0 3px rgba(17,100,163,.15)}
+.sc.active-late{border-color:#E8A838;box-shadow:0 0 0 3px rgba(232,168,56,.15)}
+.sc.active-absent{border-color:#E01E5A;box-shadow:0 0 0 3px rgba(224,30,90,.15)}
+.sc.active-emergency{border-color:#7C3085;box-shadow:0 0 0 3px rgba(124,48,133,.15)}
+.sc.active-pending{border-color:#616061;box-shadow:0 0 0 3px rgba(97,96,97,.15)}
+.sc .n{font-size:1.9rem;font-weight:800;color:var(--blue)}.sc .l{font-size:.72rem;color:var(--text2);margin-top:2px;text-transform:uppercase;letter-spacing:.4px}
+.sc .hint{font-size:.65rem;color:#bbb;margin-top:3px}
+.fi{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px}
+.fi select,.fi input{width:auto;flex:1;min-width:110px;padding:7px 10px;font-size:.85rem}
+.login-wrap{display:flex;align-items:center;justify-content:center;min-height:100vh;background:linear-gradient(135deg,#1a1d21,#2c3038)}
+.login-card{background:#fff;border-radius:12px;padding:38px 34px;width:100%;max-width:420px;margin:20px;box-shadow:0 20px 60px rgba(0,0,0,.45)}
+.logo-mark{width:54px;height:54px;background:linear-gradient(135deg,#1164A3,#1976d2);border-radius:13px;display:inline-flex;align-items:center;justify-content:center;margin-bottom:14px}
+.ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:200;align-items:center;justify-content:center;padding:16px}
+.ov.show{display:flex}
+.modal{background:#fff;border-radius:10px;padding:28px;width:100%;max-width:500px;box-shadow:0 10px 40px rgba(0,0,0,.25);max-height:90vh;overflow-y:auto}
+.modal h3{font-size:1rem;font-weight:800;margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid var(--border)}
+.btn-row{display:flex;gap:8px;justify-content:flex-end;margin-top:8px}
+.type-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px}
+.type-card{border:2px solid var(--border);border-radius:8px;padding:14px 10px;text-align:center;cursor:pointer;transition:border-color .15s,background .15s;user-select:none}
+.type-card:hover{border-color:#aaa;background:#fafafa}
+.type-card.sel-late{border-color:#E8A838;background:#fffbeb}
+.type-card.sel-absent{border-color:#E01E5A;background:#fff1f5}
+.type-card.sel-emergency{border-color:#7C3085;background:#faf5ff}
+.type-card .ticon{font-size:1.5rem;margin-bottom:4px}
+.type-card .tlabel{font-size:.78rem;font-weight:700;text-transform:uppercase;letter-spacing:.4px}
+.sec-note{font-size:.78rem;color:var(--text2);display:flex;align-items:center;gap:5px;padding:9px 12px;background:#f8f8f8;border-radius:6px;border:1px solid var(--border)}
+.filter-active{background:#dbeafe;border:1px solid #93c5fd;color:#1e40af;padding:6px 12px;border-radius:20px;font-size:.82rem;font-weight:600;display:inline-flex;align-items:center;gap:6px;margin-bottom:12px}
+.filter-active button{background:none;border:none;cursor:pointer;font-size:.9rem;color:#1e40af;padding:0;line-height:1}
+.empty-state{text-align:center;padding:40px 20px;color:var(--text2)}
+.empty-state .ei{font-size:2rem;margin-bottom:8px}
+.role-desc{font-size:.78rem;color:var(--text2);padding:8px 12px;background:#f8f8f8;border-radius:5px;border-left:3px solid var(--blue);margin-top:6px;display:none}
+.acts{display:flex;gap:4px;flex-wrap:wrap}
+@media(max-width:700px){.stats{grid-template-columns:repeat(3,1fr)}.row2{grid-template-columns:1fr}.row3{grid-template-columns:1fr 1fr}}
+@media(max-width:420px){.stats{grid-template-columns:repeat(2,1fr)}}
+</style>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="viewLogin" class="login-wrap">
+  <div class="login-card">
+    <div style="text-align:center;margin-bottom:28px">
+      <div class="logo-mark">
+        <svg width="26" height="26" fill="none" stroke="#fff" stroke-width="2.2" viewBox="0 0 24 24">
+          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+          <circle cx="9" cy="7" r="4"/>
+          <path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/>
+        </svg>
+      </div>
+      <h1 style="font-size:1.35rem;font-weight:800;margin-bottom:4px">Attendance Notifier</h1>
+      <p style="color:var(--text2);font-size:.85rem">MMX International</p>
+    </div>
+    <div id="loginErr"></div>
+    <form onsubmit="doLogin(event)">
+      <div class="fg"><label>Username</label>
+        <input id="loginId" placeholder="e.g. jrizal" autocomplete="username" required></div>
+      <div class="fg"><label>Password</label>
+        <input type="password" id="loginPw" placeholder="Password" autocomplete="current-password" required></div>
+      <button type="submit" class="btn btn-p" style="width:100%;padding:12px;justify-content:center">Sign In</button>
+      <div style="display:flex;align-items:center;gap:10px;margin-top:14px">
+        <div style="flex:1;height:1px;background:#e5e7eb"></div>
+        <span style="font-size:.75rem;color:#9ca3af;white-space:nowrap">or</span>
+        <div style="flex:1;height:1px;background:#e5e7eb"></div>
+      </div>
+      <button type="button" onclick="showRegister()" class="btn btn-o" style="width:100%;padding:12px;justify-content:center;margin-top:14px;font-weight:600">
+        &#43; Request Access
+      </button>
+    </form>
+    <p style="margin-top:12px;font-size:.72rem;text-align:center;color:#bbb">New users require admin approval before they can sign in.</p>
+  </div>
+</div>
+
+<!-- REGISTER VIEW -->
+<div id="viewRegister" class="login-wrap" style="display:none">
+  <div class="login-card">
+    <div style="text-align:center;margin-bottom:24px">
+      <div class="logo-mark">
+        <svg width="26" height="26" fill="none" stroke="#fff" stroke-width="2.2" viewBox="0 0 24 24">
+          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+          <circle cx="9" cy="7" r="4"/>
+          <line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/>
+        </svg>
+      </div>
+      <h1 style="font-size:1.25rem;font-weight:800;margin-bottom:4px">Request Access</h1>
+      <p style="color:var(--text2);font-size:.82rem">Your account will be reviewed by an admin.</p>
+    </div>
+    <div id="regMsg"></div>
+    <form onsubmit="doRegister(event)">
+      <div class="fg"><label>Username <span style="color:#ef4444">*</span></label>
+        <input id="regUser" placeholder="e.g. jrizal" autocomplete="username" required></div>
+      <div class="fg"><label>Full Name <span style="color:#ef4444">*</span></label>
+        <input id="regName" placeholder="e.g. Jose Rizal" required></div>
+      <div class="fg"><label>Email <span style="color:#ef4444">*</span></label>
+        <input type="email" id="regEmail" placeholder="jrizal@med-metrix.com" autocomplete="email" required oninput="lookupRosterEmail(this.value)">
+        <div id="regEmailHint" style="font-size:.75rem;margin-top:4px;min-height:18px"></div>
+      </div>
+      <div class="fg"><label>Department <span style="color:#ef4444">*</span></label>
+        <input id="regDept" placeholder="Auto-filled from email roster" required readonly
+          style="background:var(--bg2,#f9fafb);color:var(--text2);cursor:not-allowed">
+        <div style="font-size:.72rem;color:#9ca3af;margin-top:3px">Populated automatically when your email is recognised.</div>
+      </div>
+      <div class="fg"><label>Password <span style="color:#ef4444">*</span></label>
+        <input type="password" id="regPw" placeholder="Min. 8 characters" required></div>
+      <div class="fg"><label>Confirm Password <span style="color:#ef4444">*</span></label>
+        <input type="password" id="regPw2" placeholder="Repeat password" required></div>
+      <button type="submit" class="btn btn-p" style="width:100%;padding:12px;justify-content:center">Submit Request</button>
+    </form>
+    <p style="margin-top:14px;font-size:.75rem;text-align:center">
+      <a href="#" onclick="showLogin()" style="color:var(--primary);text-decoration:none">&#8592; Back to Sign In</a>
+    </p>
+  </div>
+</div>
+
+<!-- EMPLOYEE VIEW (submit only) -->
+<div id="viewEmployee" style="display:none">
+  <nav class="nav">
+    <div class="nav-brand">
+      <svg width="19" height="19" fill="none" stroke="#fff" stroke-width="2" viewBox="0 0 24 24">
+        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>
+      </svg>
+      Attendance Notifier
+    </div>
+    <div class="nav-right">
+      <span class="nav-user" id="empNavName"></span>
+      <span class="nav-role nr-employee">Employee</span>
+      <button class="nav-btn" onclick="doLogout()">Sign out</button>
+    </div>
+  </nav>
+  <div class="con">
+    <div id="empMsg"></div>
+    <div class="card">
+      <h2>Submit Attendance Notification</h2>
+      <div class="fg">
+        <label>Notification Type</label>
+        <div class="type-grid">
+          <div class="type-card" id="tc-late" onclick="selType('late')">
+            <div class="ticon">&#128336;</div>
+            <div class="tlabel" style="color:#92400e">Late</div>
+          </div>
+          <div class="type-card" id="tc-absent" onclick="selType('absent')">
+            <div class="ticon">&#128245;</div>
+            <div class="tlabel" style="color:#991b1b">Absent</div>
+          </div>
+          <div class="type-card" id="tc-emergency" onclick="selType('emergency')">
+            <div class="ticon">&#128680;</div>
+            <div class="tlabel" style="color:#5b21b6">Emergency</div>
+          </div>
+        </div>
+      </div>
+      <form onsubmit="submitForm(event)" id="empForm">
+        <div class="row3">
+          <div class="fg"><label>Date</label><input type="date" id="subDate" required></div>
+          <div class="fg" id="etGroup" style="display:none"><label>Expected Arrival</label><input type="time" id="subEt"></div>
+          <div class="fg"><label>Department</label><input id="subDept" readonly></div>
+        </div>
+        <div class="fg">
+          <label>Reason <span id="charCount" style="float:right;font-weight:400;color:#bbb">0/500</span></label>
+          <textarea id="subReason" rows="4" maxlength="500" placeholder="Briefly describe your reason..." required oninput="document.getElementById('charCount').textContent=this.value.length+'/500'"></textarea>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px">
+          <div class="sec-note">
+            <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+            </svg>
+            Data saved to this browser
+          </div>
+          <button type="submit" class="btn btn-p">Submit Notification</button>
+        </div>
+      </form>
+    </div>
+    <div class="card">
+      <h2>My Recent Submissions</h2>
+      <div id="empHistory"></div>
+    </div>
+  </div>
+</div>
+
+<!-- DASHBOARD VIEW (system_admin / manager / supervisor) -->
+<div id="viewDashboard" style="display:none">
+  <nav class="nav">
+    <div class="nav-brand">
+      <svg width="19" height="19" fill="none" stroke="#fff" stroke-width="2" viewBox="0 0 24 24">
+        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>
+      </svg>
+      <span id="dashTitle">Dashboard</span>
+    </div>
+    <div class="nav-right">
+      <span class="nav-user" id="dashNavName"></span>
+      <span class="nav-role" id="dashNavRole"></span>
+      <button class="nav-btn" id="navBtnSubs" onclick="showDashTab('submissions')" style="display:none">Submissions</button>
+      <button class="nav-btn" id="navBtnUsers" onclick="showDashTab('users')" style="display:none">Users</button>
+      <button class="nav-btn" onclick="doLogout()">Sign out</button>
+    </div>
+  </nav>
+  <div class="con">
+
+    <!-- SUBMISSIONS TAB -->
+    <div id="tabSubmissions">
+      <p style="font-size:.78rem;color:var(--text2);margin-bottom:12px" id="scopeNote"></p>
+      <div class="stats">
+        <div class="sc" id="kpi-all" onclick="kpiFilter('all')">
+          <div class="n" id="aTotal">0</div><div class="l">Total</div><div class="hint">show all</div>
+        </div>
+        <div class="sc" id="kpi-late" onclick="kpiFilter('late')">
+          <div class="n" id="aLate" style="color:#E8A838">0</div><div class="l">Late</div><div class="hint">click to filter</div>
+        </div>
+        <div class="sc" id="kpi-absent" onclick="kpiFilter('absent')">
+          <div class="n" id="aAbsent" style="color:#E01E5A">0</div><div class="l">Absent</div><div class="hint">click to filter</div>
+        </div>
+        <div class="sc" id="kpi-emergency" onclick="kpiFilter('emergency')">
+          <div class="n" id="aEmerg" style="color:#7C3085">0</div><div class="l">Emergency</div><div class="hint">click to filter</div>
+        </div>
+        <div class="sc" id="kpi-pending" onclick="kpiFilter('pending')">
+          <div class="n" id="aPend">0</div><div class="l">Pending</div><div class="hint">click to filter</div>
+        </div>
+      </div>
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:14px">
+          <h2 style="margin:0">Submissions</h2>
+          <div style="display:flex;gap:8px;align-items:center">
+            <button class="btn btn-o btn-sm" id="btnClearData" onclick="clearAllData()" style="color:#991b1b;border-color:#fca5a5;display:none">Clear All Data</button>
+            <button class="btn btn-o btn-sm" onclick="exportCSV()">Export CSV</button>
+          </div>
+        </div>
+        <div id="activeFilterBadge"></div>
+        <div class="fi">
+          <select id="fType" onchange="renderSubs()">
+            <option value="">All Types</option>
+            <option value="late">Late</option>
+            <option value="absent">Absent</option>
+            <option value="emergency">Emergency</option>
+          </select>
+          <select id="fStatus" onchange="renderSubs()">
+            <option value="">All Status</option>
+            <option value="pending">Pending</option>
+            <option value="approved">Approved</option>
+            <option value="rejected">Rejected</option>
+          </select>
+          <select id="fDept" onchange="renderSubs()"><option value="">All Departments</option></select>
+          <input type="date" id="fFrom" onchange="renderSubs()">
+          <input type="date" id="fTo" onchange="renderSubs()">
+          <input type="text" id="fSearch" oninput="renderSubs()" placeholder="Search name or ID...">
+        </div>
+        <div id="subTable"></div>
+      </div>
+    </div>
+
+    <!-- USERS TAB (system_admin only) -->
+    <div id="tabUsers" style="display:none">
+      <div class="card">
+        <h2>Add User</h2>
+        <div id="empAddMsg"></div>
+        <form onsubmit="addEmp(event)">
+          <div class="row2">
+            <div class="fg"><label>Username</label><input id="nEid" placeholder="EMP005" required></div>
+            <div class="fg"><label>Full Name</label><input id="nName" placeholder="Jane Doe" required></div>
+            <div class="fg"><label>Email</label><input id="nEmail" type="email" placeholder="jane@mmx.com" required></div>
+            <div class="fg"><label>Department</label><input id="nDept" placeholder="Operations" required></div>
+            <div class="fg"><label>Password (min 8)</label><input id="nPw" type="password" required minlength="8"></div>
+            <div class="fg">
+              <label>Role</label>
+              <select id="nRole" onchange="updateRoleDesc()">
+                <option value="employee">Employee</option>
+                <option value="supervisor">Supervisor</option>
+                <option value="manager">Manager</option>
+                <option value="system_admin">System Admin</option>
+              </select>
+              <div class="role-desc" id="roleDesc"></div>
+            </div>
+            <div class="fg">
+              <label>Reports To (optional)</label>
+              <select id="nReportsTo"><option value="">-- None --</option></select>
+            </div>
+          </div>
+          <button type="submit" class="btn btn-p">Add User</button>
+        </form>
+      </div>
+      <div class="card" id="pendingCard" style="display:none">
+        <h2>&#9203; Pending Registrations</h2>
+        <p style="font-size:.85rem;color:var(--text2);margin-bottom:10px">These users registered but are not yet active. Activate or delete them.</p>
+        <div id="pendingTable"></div>
+      </div>
+      <div class="card">
+        <h2>Import Users from Excel</h2>
+        <p style="font-size:.85rem;color:var(--text2);margin-bottom:12px">
+          Upload an <strong>.xlsx</strong> file with columns in this order:
+          <span style="font-family:monospace;background:#f3f4f6;padding:2px 6px;border-radius:3px;font-size:.82rem">
+            Username, Full Name, Email, Department, Role, Password, Reports To (username, optional)
+          </span><br>
+          Row 1 must be a header row. Role must be one of: <em>employee, supervisor, manager, system_admin</em>.
+        </p>
+        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+          <label for="xlsxFile" class="btn btn-o" style="cursor:pointer;margin:0">
+            &#128194; Choose Excel File
+            <input type="file" id="xlsxFile" accept=".xlsx,.xls" style="display:none" onchange="handleXlsxImport(event)">
+          </label>
+          <span id="xlsxFileName" style="font-size:.85rem;color:var(--text2)">No file chosen</span>
+        </div>
+        <div id="xlsxMsg" style="margin-top:12px"></div>
+        <div id="xlsxPreview" style="margin-top:12px"></div>
+      </div>
+      <div class="card">
+        <h2>All Users</h2>
+        <div id="empTable"></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- REVIEW MODAL -->
+<div class="ov" id="reviewModal">
+  <div class="modal">
+    <h3 id="rvTitle">Review Submission</h3>
+    <div id="rvDetail" style="background:#f8f8f8;border-radius:6px;padding:12px;margin-bottom:14px;font-size:.85rem;line-height:1.8"></div>
+    <div class="fg"><label>Status</label>
+      <select id="rvStatus">
+        <option value="pending">Pending</option>
+        <option value="approved">Approved</option>
+        <option value="rejected">Rejected</option>
+      </select>
+    </div>
+    <div class="fg"><label>Admin Notes (optional)</label>
+      <textarea id="rvNotes" rows="3" placeholder="Leave feedback for the employee..."></textarea>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-o" onclick="closeModal('reviewModal')">Cancel</button>
+      <button class="btn btn-p" onclick="saveReview()">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- RESET PASSWORD MODAL -->
+<div class="ov" id="resetPwModal">
+  <div class="modal">
+    <h3>Reset Password</h3>
+    <div id="resetPwDetail" style="background:#f8f8f8;border-radius:6px;padding:12px;margin-bottom:14px;font-size:.85rem"></div>
+    <div class="fg"><label>New Password (min 8 characters)</label>
+      <input type="password" id="resetPwNew" placeholder="Enter new password" minlength="8"></div>
+    <div class="fg"><label>Confirm New Password</label>
+      <input type="password" id="resetPwConfirm" placeholder="Re-enter new password"></div>
+    <div id="resetPwErr"></div>
+    <div class="btn-row">
+      <button class="btn btn-o" onclick="closeModal('resetPwModal')">Cancel</button>
+      <button class="btn btn-p" onclick="saveResetPw()">Reset Password</button>
+    </div>
+  </div>
+</div>
+
+<!-- DELETE CONFIRM MODAL -->
+<div class="ov" id="deleteModal">
+  <div class="modal">
+    <h3>Delete Account</h3>
+    <div id="deleteDetail" style="background:#fee2e2;border-radius:6px;padding:12px;margin-bottom:14px;font-size:.85rem;border:1px solid #fca5a5"></div>
+    <p style="font-size:.85rem;color:var(--text2);margin-bottom:14px">This will permanently delete the account and cannot be undone. Submissions by this user will be kept.</p>
+    <div class="btn-row">
+      <button class="btn btn-o" onclick="closeModal('deleteModal')">Cancel</button>
+      <button class="btn btn-danger" onclick="confirmDelete()">Delete Account</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ============================================================
+// STORAGE
+// ============================================================
+var STORE_KEY = 'mmx_attendance';
+var DATA_VERSION = 5;
+
+var ROSTER_LOOKUP = {"mteodoro@med-metrix.com":"5.140-PS - SYSTEMS","resantiago@med-metrix.com":"5.140-PS - SYSTEMS","slibanan@med-metrix.com":"5.140-PS - SYSTEMS","khara@med-metrix.com":"5.140-PS - SYSTEMS","magutierrez@med-metrix.com":"5.140-PS - SYSTEMS","nnora@med-metrix.com":"5.140-PS - SYSTEMS","rmondelo@med-metrix.com":"5.140-PS - SYSTEMS","kreolegio@med-metrix.com":"5.140-PS - SYSTEMS","mrcarino@med-metrix.com":"5.140-PS - SYSTEMS","hnaquin@med-metrix.com":"4.032-H - DENIALS APPEAL","jgo@med-metrix.com":"4.032-H - DENIALS APPEAL","tgabin@med-metrix.com":"4.032-H - DENIALS APPEAL","abonifacio@med-metrix.com":"4.032-H - DENIALS APPEAL","jdpiedad@med-metrix.com":"4.032-H - DENIALS APPEAL","tclaur@med-metrix.com":"4.032-H - DENIALS APPEAL","rmromero@med-metrix.com":"4.032-H - DENIALS APPEAL","sprestoza@med-metrix.com":"4.032-H - DENIALS APPEAL","ifernandez@med-metrix.com":"4.032-H - DENIALS APPEAL","fbergonia@med-metrix.com":"1.050-C - DEV. PROGRAMMING","nrivera@med-metrix.com":"1.120-C - TECH SUPPORT & INFRASTRUCTURE","jollanillo@med-metrix.com":"1.080-C - HUMAN RESOURCES","carellano@med-metrix.com":"5.221-P - HMH","jdguzman@med-metrix.com":"4.040-H - CODING","rverano@med-metrix.com":"1.095-C - IMPLEMENTATIONS","rcorpin@med-metrix.com":"5.225-P - NEVADA HEART","ediaz@med-metrix.com":"5.225-P - NEVADA HEART","adones@med-metrix.com":"5.225-P - NEVADA HEART","mbtolentino@med-metrix.com":"5.225-P - NEVADA HEART","jleongson@med-metrix.com":"5.225-P - NEVADA HEART","cleocario@med-metrix.com":"5.224-P - MAIMONIDES MEDICAL CANCER CTR","katorres@med-metrix.com":"5.224-P - MAIMONIDES MEDICAL CANCER CTR","rconde@med-metrix.com":"5.224-P - MAIMONIDES MEDICAL CANCER CTR","ocajayon@med-metrix.com":"5.224-P - MAIMONIDES MEDICAL CANCER CTR","mordejan@med-metrix.com":"5.225-P - NEVADA HEART","eresmeros@med-metrix.com":"1.100-C - RPA & AUTOMATION","faragon@med-metrix.com":"1.100-C - RPA & AUTOMATION","jtabar@med-metrix.com":"1.100-C - RPA & AUTOMATION","isurita@med-metrix.com":"1.100-C - RPA & AUTOMATION","cmtorres@med-metrix.com":"1.100-C - RPA & AUTOMATION","alibunao@med-metrix.com":"1.100-C - RPA & AUTOMATION","morjalo@med-metrix.com":"1.080-C - HUMAN RESOURCES","jpalermo@med-metrix.com":"5.220-P - HMCA","ddemillo@med-metrix.com":"5.220-P - HMCA","zdelacruz@med-metrix.com":"5.220-P - HMCA","psustento@med-metrix.com":"5.221-P - HMH","mnabus@med-metrix.com":"5.221-P - HMH","iliteral@med-metrix.com":"5.221-P - HMH","abuenaseda@med-metrix.com":"5.221-P - HMH","napilado@med-metrix.com":"5.221-P - HMH","camihan@med-metrix.com":"5.211-P - APG","demonakil@med-metrix.com":"5.211-P - APG","jsbataller@med-metrix.com":"5.211-P - APG","rsanjose@med-metrix.com":"5.211-P - APG","hmarana@med-metrix.com":"5.211-P - APG","wlejita@med-metrix.com":"5.211-P - APG","vgarciso@med-metrix.com":"5.211-P - APG","bealvarez@med-metrix.com":"5.211-P - APG","dpvillanueva@med-metrix.com":"4.020-H - COMPLEX CLAIMS","salamil@med-metrix.com":"3.470-E - OBH PB","lrotairo@med-metrix.com":"3.470-E - OBH PB","jgabay@med-metrix.com":"3.470-E - OBH PB","agali@med-metrix.com":"3.470-E - OBH PB","nestrada@med-metrix.com":"5.245-P - FMOL","sescotido@med-metrix.com":"5.245-P - FMOL","ncahanap@med-metrix.com":"5.211-P - APG","evaliao@med-metrix.com":"5.248-P - ARCHWELL HEALTH","ralcarde@med-metrix.com":"5.248-P - ARCHWELL HEALTH","jgawad@med-metrix.com":"5.222-P - HOLYOKE","malcoseba@med-metrix.com":"5.222-P - HOLYOKE","jomaquino@med-metrix.com":"5.252-P \u2013 ALLEVIO","recruz@med-metrix.com":"5.252-P \u2013 ALLEVIO","sabantao@med-metrix.com":"4.020-H - COMPLEX CLAIMS","lfigueroa@med-metrix.com":"5.245-P - FMOL","qandrade@med-metrix.com":"5.221-P - HMH","rjverzosa@med-metrix.com":"4.070-H - MEDICAID ELIGIBILITY","zbagtindon@med-metrix.com":"4.070-H - MEDICAID ELIGIBILITY","abarcellano@med-metrix.com":"4.070-H - MEDICAID ELIGIBILITY","jaraojo@med-metrix.com":"4.070-H - MEDICAID ELIGIBILITY","jsalmagrinde@med-metrix.com":"4.031-H - DENIALS MANAGEMENT","jbcaparas@med-metrix.com":"4.031-H - DENIALS MANAGEMENT","esalamat@med-metrix.com":"4.070-H - MEDICAID ELIGIBILITY","mcaguimbal@med-metrix.com":"1.010-C - ANALYTICS","krosales@med-metrix.com":"1.010-C - ANALYTICS","gdayao@med-metrix.com":"1.010-C - ANALYTICS","alegarde@med-metrix.com":"5.227-P - ST JOE","jdesoloc@med-metrix.com":"5.227-P - ST JOE","msimbrano@med-metrix.com":"3.330-E - VHC SPO","jpapa@med-metrix.com":"3.330-E - VHC SPO","esmendoza@med-metrix.com":"5.120-PS - CASH POST","ahuesca@med-metrix.com":"5.120-PS - CASH POST","mdimapawi@med-metrix.com":"5.120-PS - CASH POST","jdenoga@med-metrix.com":"5.120-PS - CASH POST","jperalta@med-metrix.com":"5.120-PS - CASH POST","ridavid@med-metrix.com":"5.120-PS - CASH POST","pserna@med-metrix.com":"5.120-PS - CASH POST","apatawaran@med-metrix.com":"3.470-E - OBH PB","ajdelacruz@med-metrix.com":"5.120-PS - CASH POST","alsantos@med-metrix.com":"5.120-PS - CASH POST","gmgomez@med-metrix.com":"4.070-H - MEDICAID ELIGIBILITY","mmadrilejos@med-metrix.com":"3.100-E - BROOKLYN","rbayson@med-metrix.com":"3.310-E - VHC HB","iburla@med-metrix.com":"3.330-E - VHC SPO","wbuan@med-metrix.com":"3.330-E - VHC SPO","mmarlangawe@med-metrix.com":"3.330-E - VHC SPO","msalvador@med-metrix.com":"3.330-E - VHC SPO","jsreyes@med-metrix.com":"3.330-E - VHC SPO","rfrancisco@med-metrix.com":"3.330-E - VHC SPO","acastillo@med-metrix.com":"3.330-E - VHC SPO","mcelajes@med-metrix.com":"4.060-H - FORENSIC/HIM","rmfrancisco@med-metrix.com":"4.060-H - FORENSIC/HIM","mlapuz@med-metrix.com":"4.060-H - FORENSIC/HIM","polivar@med-metrix.com":"4.060-H - FORENSIC/HIM","mmontenegro@med-metrix.com":"4.060-H - FORENSIC/HIM","ddelacruz@med-metrix.com":"4.060-H - FORENSIC/HIM","mconmigo@med-metrix.com":"4.060-H - FORENSIC/HIM","lrreyes@med-metrix.com":"4.060-H - FORENSIC/HIM","lpenaflorida@med-metrix.com":"4.060-H - FORENSIC/HIM","smaglinao@med-metrix.com":"4.060-H - FORENSIC/HIM","jfullante@med-metrix.com":"4.060-H - FORENSIC/HIM","jamendoza@med-metrix.com":"4.060-H - FORENSIC/HIM","docruz@med-metrix.com":"4.060-H - FORENSIC/HIM","nbaltazar@med-metrix.com":"4.060-H - FORENSIC/HIM","jarugay@med-metrix.com":"4.060-H - FORENSIC/HIM","aaranas@med-metrix.com":"4.060-H - FORENSIC/HIM","gnavarro@med-metrix.com":"4.060-H - FORENSIC/HIM","bjimeno@med-metrix.com":"4.060-H - FORENSIC/HIM","jpineda@med-metrix.com":"4.060-H - FORENSIC/HIM","kgarello@med-metrix.com":"4.060-H - FORENSIC/HIM","eesteban@med-metrix.com":"4.060-H - FORENSIC/HIM","aalcantara@med-metrix.com":"4.060-H - FORENSIC/HIM","equiambao@med-metrix.com":"4.060-H - FORENSIC/HIM","rpalaroan@med-metrix.com":"4.060-H - FORENSIC/HIM","tkoh@med-metrix.com":"4.060-H - FORENSIC/HIM","mfung@med-metrix.com":"4.060-H - FORENSIC/HIM","mcasulla@med-metrix.com":"4.060-H - FORENSIC/HIM","agcastillo@med-metrix.com":"4.060-H - FORENSIC/HIM","mbautista@med-metrix.com":"4.060-H - FORENSIC/HIM","kbacong@med-metrix.com":"4.060-H - FORENSIC/HIM","gfernandez@med-metrix.com":"4.060-H - FORENSIC/HIM","jvillanueva@med-metrix.com":"4.060-H - FORENSIC/HIM","mlapira@med-metrix.com":"4.060-H - FORENSIC/HIM","nunciano@med-metrix.com":"4.060-H - FORENSIC/HIM","jelizaga@med-metrix.com":"4.060-H - FORENSIC/HIM","jmonteagudo@med-metrix.com":"4.060-H - FORENSIC/HIM","gola@med-metrix.com":"4.060-H - FORENSIC/HIM","ktanedo@med-metrix.com":"4.060-H - FORENSIC/HIM","ksantiago@med-metrix.com":"4.060-H - FORENSIC/HIM","afrancisco@med-metrix.com":"4.060-H - FORENSIC/HIM","adalonzo@med-metrix.com":"4.060-H - FORENSIC/HIM","ccabales@med-metrix.com":"4.060-H - FORENSIC/HIM","aperdiguez@med-metrix.com":"4.060-H - FORENSIC/HIM","emagno@med-metrix.com":"4.060-H - FORENSIC/HIM","klegaspi@med-metrix.com":"4.060-H - FORENSIC/HIM","alacson@med-metrix.com":"4.060-H - FORENSIC/HIM","kgallardo@med-metrix.com":"4.060-H - FORENSIC/HIM","fgambayan@med-metrix.com":"4.060-H - FORENSIC/HIM","mcuadra@med-metrix.com":"4.060-H - FORENSIC/HIM","mreyes@med-metrix.com":"4.060-H - FORENSIC/HIM","kalcantara@med-metrix.com":"4.060-H - FORENSIC/HIM","cteodoro@med-metrix.com":"5.130-PS - CODING","mafajel@med-metrix.com":"5.130-PS - CODING","epangilinan@med-metrix.com":"5.130-PS - CODING","wcubacub@med-metrix.com":"5.130-PS - CODING","kbtorres@med-metrix.com":"5.130-PS - CODING","bvbrevilla@med-metrix.com":"5.130-PS - CODING","mfernandez@med-metrix.com":"3.320-E - VHC PB","rpacia@med-metrix.com":"4.060-H - FORENSIC/HIM","mavelino@med-metrix.com":"3.330-E - VHC SPO","nbumanlag@med-metrix.com":"3.330-E - VHC SPO","flagunzad@med-metrix.com":"1.140-C - TRAINING & PROCESS IMPROVEMENT","nprotacio@med-metrix.com":"1.140-C - TRAINING & PROCESS IMPROVEMENT","sabantas@med-metrix.com":"1.140-C - TRAINING & PROCESS IMPROVEMENT","ebarcelona@med-metrix.com":"1.140-C - TRAINING & PROCESS IMPROVEMENT","mgonzales@med-metrix.com":"1.140-C - TRAINING & PROCESS IMPROVEMENT","nfaller@med-metrix.com":"1.140-C - TRAINING & PROCESS IMPROVEMENT","hmhernandez@med-metrix.com":"1.140-C - TRAINING & PROCESS IMPROVEMENT","almarcelo@med-metrix.com":"1.140-C - TRAINING & PROCESS IMPROVEMENT","jnmejido@med-metrix.com":"1.140-C - TRAINING & PROCESS IMPROVEMENT","eclemente@med-metrix.com":"1.140-C - TRAINING & PROCESS IMPROVEMENT","marreyes@med-metrix.com":"1.140-C - TRAINING & PROCESS IMPROVEMENT","hapostol@med-metrix.com":"1.140-C - TRAINING & PROCESS IMPROVEMENT","jcfrancisco@med-metrix.com":"1.140-C - TRAINING & PROCESS IMPROVEMENT","kvengco@med-metrix.com":"4.040-H - CODING","sramos@med-metrix.com":"4.040-H - CODING","zereyes@med-metrix.com":"4.040-H - CODING","rnavarra@med-metrix.com":"4.040-H - CODING","rgalang@med-metrix.com":"4.040-H - CODING","jleon@med-metrix.com":"4.040-H - CODING","mmbondoc@med-metrix.com":"4.040-H - CODING","mmaquino@med-metrix.com":"4.040-H - CODING","abacosta@med-metrix.com":"4.040-H - CODING","mganayo@med-metrix.com":"4.040-H - CODING","cparilla@med-metrix.com":"4.040-H - CODING","rgratuito@med-metrix.com":"4.040-H - CODING","edeleon@med-metrix.com":"4.040-H - CODING","mmarcelo@med-metrix.com":"4.040-H - CODING","kmadrid@med-metrix.com":"4.040-H - CODING","mcayabyab@med-metrix.com":"4.040-H - CODING","lmcruz@med-metrix.com":"4.040-H - CODING","mmoreno@med-metrix.com":"4.040-H - CODING","iluarez@med-metrix.com":"4.040-H - CODING","rlaxamana@med-metrix.com":"4.040-H - CODING","shernandez@med-metrix.com":"4.040-H - CODING","jgenon@med-metrix.com":"4.040-H - CODING","eferrer@med-metrix.com":"4.040-H - CODING","bpaulino@med-metrix.com":"4.040-H - CODING","eroasa@med-metrix.com":"4.040-H - CODING","jramento@med-metrix.com":"4.040-H - CODING","rrallos@med-metrix.com":"4.040-H - CODING","mesteban@med-metrix.com":"4.040-H - CODING","acadorniga@med-metrix.com":"4.040-H - CODING","mbote@med-metrix.com":"4.040-H - CODING","remalonzo@med-metrix.com":"4.040-H - CODING","eturla@med-metrix.com":"4.040-H - CODING","cdomingo@med-metrix.com":"4.040-H - CODING","kluche@med-metrix.com":"4.040-H - CODING","fcaalim@med-metrix.com":"4.040-H - CODING","kkong@med-metrix.com":"4.040-H - CODING","rrida@med-metrix.com":"4.040-H - CODING","labuton@med-metrix.com":"4.040-H - CODING","cluna@med-metrix.com":"4.040-H - CODING","acacatian@med-metrix.com":"4.040-H - CODING","lsantos@med-metrix.com":"4.040-H - CODING","ijdevera@med-metrix.com":"4.040-H - CODING","abernandino@med-metrix.com":"4.040-H - CODING","daldesas@med-metrix.com":"4.040-H - CODING","jeesantos@med-metrix.com":"4.040-H - CODING","gumingli@med-metrix.com":"4.040-H - CODING","jrventura@med-metrix.com":"4.040-H - CODING","iolaguer@med-metrix.com":"4.040-H - CODING","frodilla@med-metrix.com":"4.040-H - CODING","mbdizon@med-metrix.com":"4.040-H - CODING","jocampo@med-metrix.com":"5.130-PS - CODING","sflorendo@med-metrix.com":"5.130-PS - CODING","mcarreon@med-metrix.com":"4.040-H - CODING","ndimarucut@med-metrix.com":"4.040-H - CODING","pevaristo@med-metrix.com":"4.040-H - CODING","tlagmay@med-metrix.com":"4.040-H - CODING","adizon@med-metrix.com":"4.040-H - CODING","rpayumo@med-metrix.com":"4.060-H - FORENSIC/HIM","mbonitillo@med-metrix.com":"3.320-E - VHC PB","tgacad@med-metrix.com":"3.320-E - VHC PB","kgonzaga@med-metrix.com":"3.320-E - VHC PB","llacno@med-metrix.com":"4.040-H - CODING","smallillin@med-metrix.com":"4.040-H - CODING","syanto@med-metrix.com":"4.040-H - CODING","ajbuan@med-metrix.com":"4.040-H - CODING","mcromero@med-metrix.com":"4.260-H - ARS REP","nsartorio@med-metrix.com":"4.060-H - FORENSIC/HIM","vasino@med-metrix.com":"4.040-H - CODING","edeguzman@med-metrix.com":"4.040-H - CODING","agonzales@med-metrix.com":"4.040-H - CODING","jchuateco@med-metrix.com":"4.060-H - FORENSIC/HIM","fmalonzo@med-metrix.com":"4.040-H - CODING","ialingasa@med-metrix.com":"4.060-H - FORENSIC/HIM","ssagsagat@med-metrix.com":"1.140-C - TRAINING & PROCESS IMPROVEMENT","raromero@med-metrix.com":"1.140-C - TRAINING & PROCESS IMPROVEMENT","jcrisol@med-metrix.com":"1.140-C - TRAINING & PROCESS IMPROVEMENT","hdicbas@med-metrix.com":"1.140-C - TRAINING & PROCESS IMPROVEMENT","rmadriaga@med-metrix.com":"1.140-C - TRAINING & PROCESS IMPROVEMENT","pcuadra@med-metrix.com":"4.040-H - CODING","aaldover@med-metrix.com":"5.130-PS - CODING","mchavez@med-metrix.com":"4.040-H - CODING","nberbie@med-metrix.com":"4.040-H - CODING","fdelacruz@med-metrix.com":"4.040-H - CODING","mlibranza@med-metrix.com":"4.040-H - CODING","rsalviejo@med-metrix.com":"4.040-H - CODING","sdomingo@med-metrix.com":"4.040-H - CODING","wpalisoc@med-metrix.com":"4.040-H - CODING","mgarcia@med-metrix.com":"4.040-H - CODING","kredelosa@med-metrix.com":"4.040-H - CODING","dsoliman@med-metrix.com":"4.040-H - CODING","jgosanes@med-metrix.com":"4.040-H - CODING","ckabayata@med-metrix.com":"4.040-H - CODING","avelasquez@med-metrix.com":"4.040-H - CODING","cescala@med-metrix.com":"4.060-H - FORENSIC/HIM","adeguzman@med-metrix.com":"4.060-H - FORENSIC/HIM","gsola@med-metrix.com":"4.060-H - FORENSIC/HIM","hgaspar@med-metrix.com":"4.040-H - CODING","ccayetano@med-metrix.com":"4.040-H - CODING","mmacalalag@med-metrix.com":"4.040-H - CODING","mbondoc@med-metrix.com":"4.040-H - CODING","jquiambao@med-metrix.com":"4.040-H - CODING","rmigraso@med-metrix.com":"4.040-H - CODING","djdelacruz@med-metrix.com":"4.040-H - CODING","mmarco@med-metrix.com":"4.040-H - CODING","alomanog@med-metrix.com":"4.040-H - CODING","cjcordero@med-metrix.com":"4.040-H - CODING","hflores@med-metrix.com":"4.040-H - CODING","icaluya@med-metrix.com":"4.040-H - CODING","kcabato@med-metrix.com":"4.040-H - CODING","jhramirez@med-metrix.com":"5.130-PS - CODING","pcalimag@med-metrix.com":"5.130-PS - CODING","jtiamzon@med-metrix.com":"5.130-PS - CODING","amanlisic@med-metrix.com":"5.130-PS - CODING","bzamora@med-metrix.com":"4.060-H - FORENSIC/HIM","jpron@med-metrix.com":"4.060-H - FORENSIC/HIM","anolasco@med-metrix.com":"4.060-H - FORENSIC/HIM","amojica@med-metrix.com":"4.060-H - FORENSIC/HIM","alegaspi@med-metrix.com":"4.060-H - FORENSIC/HIM","hdelacruz@med-metrix.com":"4.060-H - FORENSIC/HIM","mcasaclang@med-metrix.com":"4.060-H - FORENSIC/HIM","dasuncion@med-metrix.com":"5.130-PS - CODING","mabing@med-metrix.com":"5.130-PS - CODING","dbancod@med-metrix.com":"4.060-H - FORENSIC/HIM","mlansangan@med-metrix.com":"5.130-PS - CODING","mulan@med-metrix.com":"5.130-PS - CODING","rboado@med-metrix.com":"4.260-H - ARS REP","psanguyo@med-metrix.com":"5.130-PS - CODING","abartolome@med-metrix.com":"5.130-PS - CODING","avictoria@med-metrix.com":"4.060-H - FORENSIC/HIM","jbacunana@med-metrix.com":"4.060-H - FORENSIC/HIM","mpasion@med-metrix.com":"4.040-H - CODING","cdizon@med-metrix.com":"4.040-H - CODING","ibarayuga@med-metrix.com":"4.260-H - ARS REP","mrfadriquela@med-metrix.com":"4.010-H - BAD DEBT COLLECT","jmperez@med-metrix.com":"4.010-H - BAD DEBT COLLECT","jmfrancisco@med-metrix.com":"4.010-H - BAD DEBT COLLECT","cespiritu@med-metrix.com":"4.4102-H - SELF PAY HBCS","jdelmar@med-metrix.com":"2.110-S - CONTRACT MGMT & PRICER","acapungcol@med-metrix.com":"2.110-S - CONTRACT MGMT & PRICER","eravis@med-metrix.com":"5.245-P - FMOL","rgabriel@med-metrix.com":"5.120-PS - CASH POST","egonzales@med-metrix.com":"5.120-PS - CASH POST","dmariano@med-metrix.com":"5.120-PS - CASH POST","jescorial@med-metrix.com":"5.120-PS - CASH POST","maquiatan@med-metrix.com":"5.120-PS - CASH POST","ctandoc@med-metrix.com":"5.120-PS - CASH POST","kdela-cruz@med-metrix.com":"5.120-PS - CASH POST","nbadiola@med-metrix.com":"5.120-PS - CASH POST","rsunga@med-metrix.com":"5.120-PS - CASH POST","mlozada@med-metrix.com":"5.120-PS - CASH POST","jraz@med-metrix.com":"5.120-PS - CASH POST","jpadilla@med-metrix.com":"5.120-PS - CASH POST","respiritu@med-metrix.com":"5.120-PS - CASH POST","dbalbastro@med-metrix.com":"5.120-PS - CASH POST","iagliones@med-metrix.com":"5.120-PS - CASH POST","cnavarro@med-metrix.com":"5.120-PS - CASH POST","rtamayo@med-metrix.com":"5.120-PS - CASH POST","lalejandro@med-metrix.com":"5.245-P - FMOL","rmartinez@med-metrix.com":"5.120-PS - CASH POST","jcampos@med-metrix.com":"1.020-C - CUSTOMER SUPPORT","jngarcia@med-metrix.com":"1.010-C - ANALYTICS","cuclaray@med-metrix.com":"1.030-C - DATA MGMT","jmarmita@med-metrix.com":"1.050-C - DEV. PROGRAMMING","racebedo@med-metrix.com":"1.050-C - DEV. PROGRAMMING","dmayuga@med-metrix.com":"1.050-C - DEV. PROGRAMMING","jguzman@med-metrix.com":"5.120-PS - CASH POST","rpabadora@med-metrix.com":"1.120-C - TECH SUPPORT & INFRASTRUCTURE","jmangat@med-metrix.com":"4.060-H - FORENSIC/HIM","wtgabriel@med-metrix.com":"4.060-H - FORENSIC/HIM","dadlog@med-metrix.com":"4.033-H - DENIALS CLERICAL","mamarquez@med-metrix.com":"4.033-H - DENIALS CLERICAL","mevaldez@med-metrix.com":"4.033-H - DENIALS CLERICAL","edeauna@med-metrix.com":"4.033-H - DENIALS CLERICAL","gdimapilis@med-metrix.com":"4.033-H - DENIALS CLERICAL","aquimbo@med-metrix.com":"4.033-H - DENIALS CLERICAL","stuangco@med-metrix.com":"4.033-H - DENIALS CLERICAL","fregullano@med-metrix.com":"4.033-H - DENIALS CLERICAL","cjhernandez@med-metrix.com":"4.060-H - FORENSIC/HIM","cbanalnal@med-metrix.com":"4.060-H - FORENSIC/HIM","cramirez@med-metrix.com":"4.060-H - FORENSIC/HIM","ibaltazar@med-metrix.com":"4.060-H - FORENSIC/HIM","jarandia@med-metrix.com":"4.060-H - FORENSIC/HIM","mrvillanueva@med-metrix.com":"4.060-H - FORENSIC/HIM","mfraginal@med-metrix.com":"4.060-H - FORENSIC/HIM","cbuenavista@med-metrix.com":"4.060-H - FORENSIC/HIM","mcbautista@med-metrix.com":"4.060-H - FORENSIC/HIM","rmtabaranza@med-metrix.com":"4.060-H - FORENSIC/HIM","kphodaca@med-metrix.com":"4.060-H - FORENSIC/HIM","jpasco@med-metrix.com":"4.060-H - FORENSIC/HIM","avbautista@med-metrix.com":"4.060-H - FORENSIC/HIM","amalto@med-metrix.com":"4.060-H - FORENSIC/HIM","wedloy@med-metrix.com":"4.060-H - FORENSIC/HIM","jbayog@med-metrix.com":"4.033-H - DENIALS CLERICAL","cjuan@med-metrix.com":"5.120-PS - CASH POST","opasayan@med-metrix.com":"5.131-PS - PROVIDER ENROLLMENT","erosales@med-metrix.com":"4.033-H - DENIALS CLERICAL","jfontejon@med-metrix.com":"5.130-PS - CODING","rlescano@med-metrix.com":"4.033-H - DENIALS CLERICAL","gcastillo@med-metrix.com":"4.033-H - DENIALS CLERICAL","aasantos@med-metrix.com":"3.440-E - OBH DENIALS","rebautista@med-metrix.com":"3.440-E - OBH DENIALS","jlagman@med-metrix.com":"4.060-H - FORENSIC/HIM","dbenedicto@med-metrix.com":"1.070-C - FINANCE","kpagkalinawan@med-metrix.com":"4.060-H - FORENSIC/HIM","aadona@med-metrix.com":"1.140-C - TRAINING & PROCESS IMPROVEMENT","gbatusin@med-metrix.com":"1.060-C - EXECUTIVE MGMT","eamit@med-metrix.com":"4.050-H - DISCHARGE PLANNING","rramos@med-metrix.com":"1.140-C - TRAINING & PROCESS IMPROVEMENT","mvendiola@med-metrix.com":"1.140-C - TRAINING & PROCESS IMPROVEMENT","mfermia@med-metrix.com":"1.140-C - TRAINING & PROCESS IMPROVEMENT","psalgado@med-metrix.com":"1.060-C - EXECUTIVE MGMT","jnacario@med-metrix.com":"4.060-H - FORENSIC/HIM","jgranada@med-metrix.com":"4.060-H - FORENSIC/HIM","cmsantos@med-metrix.com":"1.080-C - HUMAN RESOURCES","mlaserna@med-metrix.com":"1.080-C - HUMAN RESOURCES","mpatilla@med-metrix.com":"1.080-C - HUMAN RESOURCES","mgilo@med-metrix.com":"1.080-C - HUMAN RESOURCES","nmorado@med-metrix.com":"1.080-C - HUMAN RESOURCES","nnepangue@med-metrix.com":"1.080-C - HUMAN RESOURCES","eadeleon@med-metrix.com":"4.031-H - DENIALS MANAGEMENT","dcrodriguez@med-metrix.com":"4.031-H - DENIALS MANAGEMENT","mevergara@med-metrix.com":"4.031-H - DENIALS MANAGEMENT","alogronio@med-metrix.com":"4.031-H - DENIALS MANAGEMENT","fperez@med-metrix.com":"4.031-H - DENIALS MANAGEMENT","brdabayson@med-metrix.com":"4.034-H - DENIALS INS INFO COOR","fhajijul@med-metrix.com":"4.034-H - DENIALS INS INFO COOR","kcaguioa@med-metrix.com":"4.034-H - DENIALS INS INFO COOR","jbruza@med-metrix.com":"4.034-H - DENIALS INS INFO COOR","pbabon@med-metrix.com":"4.034-H - DENIALS INS INFO COOR","dsinocbit@med-metrix.com":"4.034-H - DENIALS INS INFO COOR","kgumasing@med-metrix.com":"4.010-H - BAD DEBT COLLECT","freyes@med-metrix.com":"4.010-H - BAD DEBT COLLECT","kcompetente@med-metrix.com":"4.010-H - BAD DEBT COLLECT","jelnar@med-metrix.com":"4.034-H - DENIALS INS INFO COOR","jeduardo@med-metrix.com":"4.034-H - DENIALS INS INFO COOR","kalicog@med-metrix.com":"4.034-H - DENIALS INS INFO COOR","nbalanay@med-metrix.com":"4.034-H - DENIALS INS INFO COOR","sborondia@med-metrix.com":"4.034-H - DENIALS INS INFO COOR","lminas@med-metrix.com":"4.034-H - DENIALS INS INFO COOR","easi@med-metrix.com":"4.034-H - DENIALS INS INFO COOR","aoring@med-metrix.com":"4.034-H - DENIALS INS INFO COOR","joalmanzor@med-metrix.com":"4.034-H - DENIALS INS INFO COOR","wdelosreyes@med-metrix.com":"4.034-H - DENIALS INS INFO COOR","hhirose@med-metrix.com":"4.034-H - DENIALS INS INFO COOR","kcaldo@med-metrix.com":"4.034-H - DENIALS INS INFO COOR","eestialbo@med-metrix.com":"4.034-H - DENIALS INS INFO COOR","maban@med-metrix.com":"4.034-H - DENIALS INS INFO COOR","flugagay@med-metrix.com":"4.034-H - DENIALS INS INFO COOR","mclupdag@med-metrix.com":"4.034-H - DENIALS INS INFO COOR","jsismundo@med-metrix.com":"4.034-H - DENIALS INS INFO COOR","kgacad@med-metrix.com":"4.034-H - DENIALS INS INFO COOR","bbandiola@med-metrix.com":"4.034-H - DENIALS INS INFO COOR","jvergara@med-metrix.com":"4.034-H - DENIALS INS INFO COOR","mmartos@med-metrix.com":"4.010-H - BAD DEBT COLLECT","jceballe@med-metrix.com":"4.034-H - DENIALS INS INFO COOR","cpaconla@med-metrix.com":"4.034-H - DENIALS INS INFO COOR","daquino@med-metrix.com":"4.034-H - DENIALS INS INFO COOR","gsacramento@med-metrix.com":"4.034-H - DENIALS INS INFO COOR","idantes@med-metrix.com":"4.031-H - DENIALS MANAGEMENT","dlimpin@med-metrix.com":"4.031-H - DENIALS MANAGEMENT","karceo@med-metrix.com":"4.031-H - DENIALS MANAGEMENT","apena@med-metrix.com":"4.034-H - DENIALS INS INFO COOR","jalbano@med-metrix.com":"4.034-H - DENIALS INS INFO COOR","vcirujano@med-metrix.com":"4.034-H - DENIALS INS INFO COOR","argranada@med-metrix.com":"4.034-H - DENIALS INS INFO COOR","enaval@med-metrix.com":"4.034-H - DENIALS INS INFO COOR","befernandez@med-metrix.com":"4.034-H - DENIALS INS INFO COOR","jalmanzor@med-metrix.com":"3.440-E - OBH DENIALS","jbanados@med-metrix.com":"4.034-H - DENIALS INS INFO COOR","ngonzales@med-metrix.com":"4.070-H - MEDICAID ELIGIBILITY","fbosangit@med-metrix.com":"4.070-H - MEDICAID ELIGIBILITY","rorodriguez@med-metrix.com":"4.070-H - MEDICAID ELIGIBILITY","areyez@med-metrix.com":"4.034-H - DENIALS INS INFO COOR","aarlos@med-metrix.com":"4.034-H - DENIALS INS INFO COOR","vsecriz@med-metrix.com":"4.034-H - DENIALS INS INFO COOR","jeborja@med-metrix.com":"4.034-H - DENIALS INS INFO COOR","cbantay@med-metrix.com":"4.034-H - DENIALS INS INFO COOR","ocoquia@med-metrix.com":"4.034-H - DENIALS INS INFO COOR","rberonilla@med-metrix.com":"4.070-H - MEDICAID ELIGIBILITY","rurrutia@med-metrix.com":"5.212-P - ASTERA","cdeguzman@med-metrix.com":"5.212-P - ASTERA","abaraquel@med-metrix.com":"5.212-P - ASTERA","jzipagan@med-metrix.com":"5.212-P - ASTERA","gvillamor@med-metrix.com":"5.221-P - HMH","jodeguzman@med-metrix.com":"5.221-P - HMH","csinuto@med-metrix.com":"5.221-P - HMH","adiarios@med-metrix.com":"5.221-P - HMH","lranoco@med-metrix.com":"5.221-P - HMH","nkurata@med-metrix.com":"5.221-P - HMH","emunion@med-metrix.com":"5.221-P - HMH","jzperez@med-metrix.com":"5.221-P - HMH","ncasada@med-metrix.com":"5.221-P - HMH","ccabral@med-metrix.com":"5.221-P - HMH","mlee@med-metrix.com":"5.221-P - HMH","gsanchez@med-metrix.com":"5.221-P - HMH","jmaravilla@med-metrix.com":"5.221-P - HMH","rsalido@med-metrix.com":"5.225-P - NEVADA HEART","skavano@med-metrix.com":"5.225-P - NEVADA HEART","hnudalo@med-metrix.com":"5.225-P - NEVADA HEART","jorca@med-metrix.com":"5.225-P - NEVADA HEART","rlamata@med-metrix.com":"5.225-P - NEVADA HEART","kraymundo@med-metrix.com":"5.225-P - NEVADA HEART","jopunzal@med-metrix.com":"5.225-P - NEVADA HEART","marcita@med-metrix.com":"5.225-P - NEVADA HEART","kaviles@med-metrix.com":"5.212-P - ASTERA","rramiso@med-metrix.com":"5.212-P - ASTERA","jadeleon@med-metrix.com":"5.221-P - HMH","evelasco@med-metrix.com":"5.221-P - HMH","lquierequire@med-metrix.com":"5.212-P - ASTERA","molajay@med-metrix.com":"5.212-P - ASTERA","fanama@med-metrix.com":"3.310-E - VHC HB","gabejuela@med-metrix.com":"3.310-E - VHC HB","jeestrera@med-metrix.com":"3.310-E - VHC HB","rmaneclang@med-metrix.com":"5.225-P - NEVADA HEART","mcesteban@med-metrix.com":"5.225-P - NEVADA HEART","mareyes@med-metrix.com":"5.212-P - ASTERA","amejia@med-metrix.com":"3.100-E - BROOKLYN","cnacor@med-metrix.com":"3.100-E - BROOKLYN","pamparadao@med-metrix.com":"5.221-P - HMH","kcorpin@med-metrix.com":"5.221-P - HMH","abulacan@med-metrix.com":"5.221-P - HMH","mbonaobra@med-metrix.com":"5.221-P - HMH","baragon@med-metrix.com":"5.221-P - HMH","acalaunan@med-metrix.com":"5.221-P - HMH","eespinosa@med-metrix.com":"5.221-P - HMH","cabiog@med-metrix.com":"5.221-P - HMH","rchavez@med-metrix.com":"5.221-P - HMH","gmanlogon@med-metrix.com":"5.221-P - HMH","amacatoon@med-metrix.com":"5.221-P - HMH","bpanilag@med-metrix.com":"1.120-C - TECH SUPPORT & INFRASTRUCTURE","mlagman@med-metrix.com":"1.120-C - TECH SUPPORT & INFRASTRUCTURE","eremanente@med-metrix.com":"1.120-C - TECH SUPPORT & INFRASTRUCTURE","dguzman@med-metrix.com":"1.120-C - TECH SUPPORT & INFRASTRUCTURE","mcaday@med-metrix.com":"1.120-C - TECH SUPPORT & INFRASTRUCTURE","rudevera@med-metrix.com":"1.120-C - TECH SUPPORT & INFRASTRUCTURE","trdelcastillo@med-metrix.com":"1.120-C - TECH SUPPORT & INFRASTRUCTURE","rpalco@med-metrix.com":"1.120-C - TECH SUPPORT & INFRASTRUCTURE","ccagayan@med-metrix.com":"1.120-C - TECH SUPPORT & INFRASTRUCTURE","fbeloso@med-metrix.com":"1.120-C - TECH SUPPORT & INFRASTRUCTURE","clim@med-metrix.com":"1.050-C - DEV. PROGRAMMING","kenero@med-metrix.com":"4.032-H - DENIALS APPEAL","cgarcia@med-metrix.com":"3.440-E - OBH DENIALS","jeromeo@med-metrix.com":"4.032-H - DENIALS APPEAL","hrmendoza@med-metrix.com":"4.032-H - DENIALS APPEAL","mjulwadi@med-metrix.com":"4.032-H - DENIALS APPEAL","abeltran@med-metrix.com":"1.070-C - FINANCE","achavez@med-metrix.com":"1.140-C - TRAINING & PROCESS IMPROVEMENT","kvillaruz@med-metrix.com":"1.080-C - HUMAN RESOURCES","mbevera@med-metrix.com":"1.080-C - HUMAN RESOURCES","pyumul@med-metrix.com":"4.240-H - ARS MANAGER","nviterbo@med-metrix.com":"4.240-H - ARS MANAGER","vvalencia@med-metrix.com":"4.240-H - ARS MANAGER","rvgarcia@med-metrix.com":"4.060-H - FORENSIC/HIM","dtecson@med-metrix.com":"4.060-H - FORENSIC/HIM","cperpinan@med-metrix.com":"4.060-H - FORENSIC/HIM","mjreyes@med-metrix.com":"5.130-PS - CODING","rdelen@med-metrix.com":"5.120-PS - CASH POST","kveto@med-metrix.com":"5.010-PS - MANAGEMENT","anatividad@med-metrix.com":"5.010-PS - MANAGEMENT","dabella@med-metrix.com":"5.010-PS - MANAGEMENT","aenriquez@med-metrix.com":"5.010-PS - MANAGEMENT","jviloria@med-metrix.com":"4.060-H - FORENSIC/HIM","rramiro@med-metrix.com":"4.4102-H - SELF PAY HBCS","ardiaz@med-metrix.com":"5.233-P - AKUMIN","abestoy@med-metrix.com":"4.020-H - COMPLEX CLAIMS","esagrado@med-metrix.com":"4.240-H - ARS MANAGER","jcarasi@med-metrix.com":"4.031-H - DENIALS MANAGEMENT","nlama@med-metrix.com":"5.131-PS - PROVIDER ENROLLMENT","kgardose@med-metrix.com":"1.140-C - TRAINING & PROCESS IMPROVEMENT","hferrer@med-metrix.com":"1.140-C - TRAINING & PROCESS IMPROVEMENT","jevasco@med-metrix.com":"1.140-C - TRAINING & PROCESS IMPROVEMENT","rsoriano@med-metrix.com":"4.060-H - FORENSIC/HIM","rcervantes@med-metrix.com":"4.4102-H - SELF PAY HBCS","jsierra@med-metrix.com":"1.140-C - TRAINING & PROCESS IMPROVEMENT","kcapilitan@med-metrix.com":"1.140-C - TRAINING & PROCESS IMPROVEMENT","pasantos@med-metrix.com":"4.040-H - CODING","zabanco@med-metrix.com":"4.070-H - MEDICAID ELIGIBILITY","dpelingon@med-metrix.com":"4.070-H - MEDICAID ELIGIBILITY","wyochingco@med-metrix.com":"3.100-E - BROOKLYN","janago@med-metrix.com":"3.100-E - BROOKLYN","jneuda@med-metrix.com":"3.100-E - BROOKLYN","dmjacob@med-metrix.com":"3.100-E - BROOKLYN","ansatoc@med-metrix.com":"3.100-E - BROOKLYN","msanjuan@med-metrix.com":"3.100-E - BROOKLYN","jtomas@med-metrix.com":"3.100-E - BROOKLYN","jasanchez@med-metrix.com":"3.100-E - BROOKLYN","egruta@med-metrix.com":"3.100-E - BROOKLYN","adieta@med-metrix.com":"3.100-E - BROOKLYN","dmhernandez@med-metrix.com":"3.100-E - BROOKLYN","ddipa@med-metrix.com":"3.100-E - BROOKLYN","mbalatayo@med-metrix.com":"3.100-E - BROOKLYN","dbacosa@med-metrix.com":"3.100-E - BROOKLYN","moliveros@med-metrix.com":"3.100-E - BROOKLYN","smalcoran@med-metrix.com":"3.100-E - BROOKLYN","ckeh@med-metrix.com":"4.020-H - COMPLEX CLAIMS","mdineros@med-metrix.com":"4.020-H - COMPLEX CLAIMS","aborja@med-metrix.com":"3.310-E - VHC HB","mvenas@med-metrix.com":"3.310-E - VHC HB","klabay@med-metrix.com":"3.310-E - VHC HB","rosantos@med-metrix.com":"3.310-E - VHC HB","asantos@med-metrix.com":"3.310-E - VHC HB","namado@med-metrix.com":"3.310-E - VHC HB","mrpetilo@med-metrix.com":"3.310-E - VHC HB","kpanuntan@med-metrix.com":"3.310-E - VHC HB","mramirez@med-metrix.com":"3.310-E - VHC HB","ematias@med-metrix.com":"3.310-E - VHC HB","cmontero@med-metrix.com":"3.310-E - VHC HB","mbaulo@med-metrix.com":"3.310-E - VHC HB","dgagante@med-metrix.com":"3.310-E - VHC HB","sereve@med-metrix.com":"3.310-E - VHC HB","cnochete@med-metrix.com":"3.310-E - VHC HB","dmartinez@med-metrix.com":"3.320-E - VHC PB","cjbrosas@med-metrix.com":"3.320-E - VHC PB","lpecolados@med-metrix.com":"3.320-E - VHC PB","smata@med-metrix.com":"3.320-E - VHC PB","dlaureta@med-metrix.com":"3.320-E - VHC PB","gferreria@med-metrix.com":"3.320-E - VHC PB","nancheta@med-metrix.com":"3.320-E - VHC PB","ramalio@med-metrix.com":"3.320-E - VHC PB","hmangondato@med-metrix.com":"3.320-E - VHC PB","gtriste@med-metrix.com":"4.312-H - ARS HBCS CAPE COD","cmendoza@med-metrix.com":"4.312-H - ARS HBCS CAPE COD","ncruz@med-metrix.com":"4.312-H - ARS HBCS CAPE COD","yalim@med-metrix.com":"4.312-H - ARS HBCS CAPE COD","mdonato@med-metrix.com":"4.260-H - ARS REP","avalencia@med-metrix.com":"4.318-H - ARS HBCS HEALTH FIRST","abase@med-metrix.com":"4.318-H - ARS HBCS HEALTH FIRST","jadora@med-metrix.com":"4.318-H - ARS HBCS HEALTH FIRST","kballesteros@med-metrix.com":"3.310-E - VHC HB","mjsantiago@med-metrix.com":"4.260-H - ARS REP","rjjlopez@med-metrix.com":"4.260-H - ARS REP","avillamor@med-metrix.com":"4.260-H - ARS REP","dbacani@med-metrix.com":"4.260-H - ARS REP","mnicol@med-metrix.com":"3.100-E - BROOKLYN","rcabanilia@med-metrix.com":"3.100-E - BROOKLYN","aaacosta@med-metrix.com":"3.100-E - BROOKLYN","hfelomino@med-metrix.com":"3.100-E - BROOKLYN","mparrocho@med-metrix.com":"3.100-E - BROOKLYN","clibao@med-metrix.com":"3.100-E - BROOKLYN","mmpechino@med-metrix.com":"4.260-H - ARS REP","rrecarro@med-metrix.com":"4.260-H - ARS REP","cponce@med-metrix.com":"4.260-H - ARS REP","cmoreno@med-metrix.com":"4.260-H - ARS REP","jumanalo@med-metrix.com":"4.260-H - ARS REP","smirana@med-metrix.com":"4.260-H - ARS REP","romapaye@med-metrix.com":"4.260-H - ARS REP","rzapata@med-metrix.com":"4.260-H - ARS REP","svalledor@med-metrix.com":"4.260-H - ARS REP","rbolintiam@med-metrix.com":"4.020-H - COMPLEX CLAIMS","dflorendo@med-metrix.com":"4.260-H - ARS REP","jandan@med-metrix.com":"4.260-H - ARS REP","jalimodian@med-metrix.com":"4.260-H - ARS REP","smurillo@med-metrix.com":"4.020-H - COMPLEX CLAIMS","bgarcia@med-metrix.com":"4.260-H - ARS REP","rcastaneda@med-metrix.com":"4.260-H - ARS REP","ssolares@med-metrix.com":"4.020-H - COMPLEX CLAIMS","godelacruz@med-metrix.com":"4.260-H - ARS REP","mmiguel@med-metrix.com":"4.260-H - ARS REP","dcalabon@med-metrix.com":"4.322-H - ARS HBCS PRISMA","cbascugin@med-metrix.com":"4.260-H - ARS REP","jlmartinez@med-metrix.com":"4.260-H - ARS REP","agcruz@med-metrix.com":"4.260-H - ARS REP","gmadrono@med-metrix.com":"4.260-H - ARS REP","morense@med-metrix.com":"4.322-H - ARS HBCS PRISMA","nmflores@med-metrix.com":"4.260-H - ARS REP","jroselo@med-metrix.com":"4.322-H - ARS HBCS PRISMA","jeroy@med-metrix.com":"4.260-H - ARS REP","jmvasquez@med-metrix.com":"4.322-H - ARS HBCS PRISMA","rnavarro@med-metrix.com":"4.322-H - ARS HBCS PRISMA","jvelasco@med-metrix.com":"4.322-H - ARS HBCS PRISMA","kmacaranas@med-metrix.com":"4.260-H - ARS REP","jfamilaran@med-metrix.com":"4.322-H - ARS HBCS PRISMA","jsocito@med-metrix.com":"4.260-H - ARS REP","ecastillo@med-metrix.com":"4.260-H - ARS REP","jmacan@med-metrix.com":"4.020-H - COMPLEX CLAIMS","asantales@med-metrix.com":"4.260-H - ARS REP","chankins@med-metrix.com":"4.322-H - ARS HBCS PRISMA","ngalindon@med-metrix.com":"4.322-H - ARS HBCS PRISMA","adery@med-metrix.com":"4.322-H - ARS HBCS PRISMA","jacruz@med-metrix.com":"4.323-H - ARS HBCS SISTERS OF CHARITY","bbonquin@med-metrix.com":"4.324-H - ARS HBCS BATON ROUGE GENERAL","ncadivida@med-metrix.com":"4.324-H - ARS HBCS BATON ROUGE GENERAL","hcuenza@med-metrix.com":"4.020-H - COMPLEX CLAIMS","dpellazar@med-metrix.com":"4.020-H - COMPLEX CLAIMS","cingoy@med-metrix.com":"4.020-H - COMPLEX CLAIMS","mparom@med-metrix.com":"5.221-P - HMH","ldiamante@med-metrix.com":"4.323-H - ARS HBCS SISTERS OF CHARITY","jayungon@med-metrix.com":"5.212-P - ASTERA","rlapatha@med-metrix.com":"5.212-P - ASTERA","jmatic@med-metrix.com":"5.231-P - NEIGHBORHOOD HEALTH SERVICES CORP","miglesia@med-metrix.com":"4.060-H - FORENSIC/HIM","jmalinao@med-metrix.com":"4.060-H - FORENSIC/HIM","llatoja@med-metrix.com":"4.060-H - FORENSIC/HIM","glongalong@med-metrix.com":"4.060-H - FORENSIC/HIM","jsolasco@med-metrix.com":"4.060-H - FORENSIC/HIM","ssecillano@med-metrix.com":"4.060-H - FORENSIC/HIM","mpomposo@med-metrix.com":"4.060-H - FORENSIC/HIM","rbareno@med-metrix.com":"4.060-H - FORENSIC/HIM","jsy@med-metrix.com":"4.060-H - FORENSIC/HIM","msaspa@med-metrix.com":"4.060-H - FORENSIC/HIM","csasil@med-metrix.com":"4.060-H - FORENSIC/HIM","csamonte@med-metrix.com":"4.060-H - FORENSIC/HIM","msagutoy@med-metrix.com":"4.060-H - FORENSIC/HIM","pramos@med-metrix.com":"4.060-H - FORENSIC/HIM","drosie@med-metrix.com":"4.060-H - FORENSIC/HIM","creferiza@med-metrix.com":"4.060-H - FORENSIC/HIM","fnicosa@med-metrix.com":"4.060-H - FORENSIC/HIM","rmiang@med-metrix.com":"4.060-H - FORENSIC/HIM","cgonzales@med-metrix.com":"4.060-H - FORENSIC/HIM","amorfi@med-metrix.com":"4.060-H - FORENSIC/HIM","jconing@med-metrix.com":"4.060-H - FORENSIC/HIM","fasas@med-metrix.com":"4.060-H - FORENSIC/HIM","sdelfino@med-metrix.com":"4.060-H - FORENSIC/HIM","magripa@med-metrix.com":"4.060-H - FORENSIC/HIM","ccaritativo@med-metrix.com":"4.060-H - FORENSIC/HIM","jealberto@med-metrix.com":"4.060-H - FORENSIC/HIM","ahicap@med-metrix.com":"4.060-H - FORENSIC/HIM","marceo@med-metrix.com":"4.060-H - FORENSIC/HIM","aposadas@med-metrix.com":"4.060-H - FORENSIC/HIM","jtajan@med-metrix.com":"4.060-H - FORENSIC/HIM","apanesa@med-metrix.com":"4.060-H - FORENSIC/HIM","rmirandilla@med-metrix.com":"4.060-H - FORENSIC/HIM","asilmogan@med-metrix.com":"4.060-H - FORENSIC/HIM","klmartinez@med-metrix.com":"4.060-H - FORENSIC/HIM","rdelacruz@med-metrix.com":"4.060-H - FORENSIC/HIM","mmaglalang@med-metrix.com":"4.060-H - FORENSIC/HIM","mpena@med-metrix.com":"4.060-H - FORENSIC/HIM","judelacruz@med-metrix.com":"4.060-H - FORENSIC/HIM","jtorda@med-metrix.com":"4.060-H - FORENSIC/HIM","tbartolome@med-metrix.com":"4.060-H - FORENSIC/HIM","mjramos@med-metrix.com":"4.060-H - FORENSIC/HIM","jpatino@med-metrix.com":"4.060-H - FORENSIC/HIM","wgabriel@med-metrix.com":"4.060-H - FORENSIC/HIM","jtirados@med-metrix.com":"4.060-H - FORENSIC/HIM","kprado@med-metrix.com":"4.060-H - FORENSIC/HIM","rcoronel@med-metrix.com":"4.060-H - FORENSIC/HIM","mmaturan@med-metrix.com":"4.060-H - FORENSIC/HIM","rlipar@med-metrix.com":"4.060-H - FORENSIC/HIM","lgatchalian@med-metrix.com":"4.060-H - FORENSIC/HIM","mbanez@med-metrix.com":"4.060-H - FORENSIC/HIM","mhernandez@med-metrix.com":"4.060-H - FORENSIC/HIM","karizala@med-metrix.com":"4.060-H - FORENSIC/HIM","ggarcia@med-metrix.com":"4.060-H - FORENSIC/HIM","mcarmen@med-metrix.com":"4.060-H - FORENSIC/HIM","lmendano@med-metrix.com":"4.060-H - FORENSIC/HIM","tsoltes@med-metrix.com":"4.060-H - FORENSIC/HIM","jmutala@med-metrix.com":"4.060-H - FORENSIC/HIM","lmartin@med-metrix.com":"4.060-H - FORENSIC/HIM","cjordan@med-metrix.com":"4.060-H - FORENSIC/HIM","dibanez@med-metrix.com":"4.060-H - FORENSIC/HIM","vimendez@med-metrix.com":"4.060-H - FORENSIC/HIM","ecruz@med-metrix.com":"4.060-H - FORENSIC/HIM","jbmercado@med-metrix.com":"4.060-H - FORENSIC/HIM","rbanisil@med-metrix.com":"4.060-H - FORENSIC/HIM","lconopio@med-metrix.com":"4.060-H - FORENSIC/HIM","monio@med-metrix.com":"4.060-H - FORENSIC/HIM","aceno@med-metrix.com":"4.060-H - FORENSIC/HIM","jteves@med-metrix.com":"4.060-H - FORENSIC/HIM","hravelo@med-metrix.com":"4.060-H - FORENSIC/HIM","jtuberlleha@med-metrix.com":"4.060-H - FORENSIC/HIM","rprado@med-metrix.com":"4.060-H - FORENSIC/HIM","jnatividad@med-metrix.com":"4.060-H - FORENSIC/HIM","slacson@med-metrix.com":"4.060-H - FORENSIC/HIM","kcraymundo@med-metrix.com":"4.060-H - FORENSIC/HIM","mgallano@med-metrix.com":"4.060-H - FORENSIC/HIM","lfelicilda@med-metrix.com":"4.060-H - FORENSIC/HIM","kcaldona@med-metrix.com":"4.060-H - FORENSIC/HIM","jcabarloc@med-metrix.com":"4.060-H - FORENSIC/HIM","gborra@med-metrix.com":"4.060-H - FORENSIC/HIM","jaraneta@med-metrix.com":"4.060-H - FORENSIC/HIM","nandres@med-metrix.com":"4.060-H - FORENSIC/HIM","caguda@med-metrix.com":"4.060-H - FORENSIC/HIM","jbestrada@med-metrix.com":"4.060-H - FORENSIC/HIM","sdeleon@med-metrix.com":"4.060-H - FORENSIC/HIM","rlumagbas@med-metrix.com":"4.060-H - FORENSIC/HIM","jarcebutche@med-metrix.com":"4.060-H - FORENSIC/HIM","rrobles@med-metrix.com":"4.060-H - FORENSIC/HIM","salmacha@med-metrix.com":"5.211-P - APG","lquismundo@med-metrix.com":"4.060-H - FORENSIC/HIM","maranas@med-metrix.com":"4.060-H - FORENSIC/HIM","cmalate@med-metrix.com":"4.060-H - FORENSIC/HIM","jgabilan@med-metrix.com":"4.060-H - FORENSIC/HIM","obongadillo@med-metrix.com":"4.060-H - FORENSIC/HIM","iadonis@med-metrix.com":"4.060-H - FORENSIC/HIM","ksese@med-metrix.com":"4.060-H - FORENSIC/HIM","eagsalog@med-metrix.com":"4.060-H - FORENSIC/HIM","rsabillo@med-metrix.com":"4.060-H - FORENSIC/HIM","jordas@med-metrix.com":"4.060-H - FORENSIC/HIM","anipit@med-metrix.com":"4.060-H - FORENSIC/HIM","amontoya@med-metrix.com":"4.060-H - FORENSIC/HIM","jcabuay@med-metrix.com":"4.060-H - FORENSIC/HIM","sastillero@med-metrix.com":"4.060-H - FORENSIC/HIM","subalde@med-metrix.com":"4.060-H - FORENSIC/HIM","rdelatorre@med-metrix.com":"4.060-H - FORENSIC/HIM","chdavid@med-metrix.com":"4.060-H - FORENSIC/HIM","jguelas@med-metrix.com":"4.060-H - FORENSIC/HIM","mgranada@med-metrix.com":"4.060-H - FORENSIC/HIM","mcasabar@med-metrix.com":"4.060-H - FORENSIC/HIM","mbuliboli@med-metrix.com":"4.060-H - FORENSIC/HIM","abrion@med-metrix.com":"4.060-H - FORENSIC/HIM","vanquilan@med-metrix.com":"4.060-H - FORENSIC/HIM","smaniapao@med-metrix.com":"4.060-H - FORENSIC/HIM","aalejo@med-metrix.com":"4.060-H - FORENSIC/HIM","jandrade@med-metrix.com":"4.060-H - FORENSIC/HIM","macastro@med-metrix.com":"5.211-P - APG","klugatiman@med-metrix.com":"5.211-P - APG","gtorres@med-metrix.com":"5.211-P - APG","vrequino@med-metrix.com":"5.211-P - APG","dsalvador@med-metrix.com":"5.211-P - APG","stolentino@med-metrix.com":"5.211-P - APG","jtmendoza@med-metrix.com":"5.211-P - APG","hlozada@med-metrix.com":"5.211-P - APG","kvitug@med-metrix.com":"5.211-P - APG","wbonete@med-metrix.com":"5.211-P - APG","iolivenza@med-metrix.com":"5.211-P - APG","hmagallanes@med-metrix.com":"5.211-P - APG","juespanol@med-metrix.com":"5.211-P - APG","jrpugal@med-metrix.com":"5.211-P - APG","kbagaoisan@med-metrix.com":"5.211-P - APG","ntenio@med-metrix.com":"5.222-P - HOLYOKE","ltrivino@med-metrix.com":"5.212-P - ASTERA","msolito@med-metrix.com":"5.212-P - ASTERA","pcenzon@med-metrix.com":"5.212-P - ASTERA","ccorpin@med-metrix.com":"5.212-P - ASTERA","fsamonte@med-metrix.com":"5.212-P - ASTERA","kpantanilla@med-metrix.com":"5.212-P - ASTERA","zvelasco@med-metrix.com":"5.212-P - ASTERA","npolendey@med-metrix.com":"5.212-P - ASTERA","kevillanueva@med-metrix.com":"5.220-P - HMCA","jdanque@med-metrix.com":"5.220-P - HMCA","jape@med-metrix.com":"5.220-P - HMCA","storres@med-metrix.com":"5.221-P - HMH","mjvargas@med-metrix.com":"5.221-P - HMH","jsantos@med-metrix.com":"5.221-P - HMH","mmagora@med-metrix.com":"5.221-P - HMH","amtatel@med-metrix.com":"5.221-P - HMH","jdaquino@med-metrix.com":"5.221-P - HMH","lanselmo@med-metrix.com":"5.221-P - HMH","mjpabanil@med-metrix.com":"3.320-E - VHC PB","mmacutay@med-metrix.com":"5.221-P - HMH","redelacruz@med-metrix.com":"5.221-P - HMH","macabrera@med-metrix.com":"5.221-P - HMH","jhorario@med-metrix.com":"5.221-P - HMH","jojastro@med-metrix.com":"5.221-P - HMH","cmdeguzman@med-metrix.com":"5.221-P - HMH","lyosoya@med-metrix.com":"5.221-P - HMH","iramilo@med-metrix.com":"5.221-P - HMH","colaivar@med-metrix.com":"5.221-P - HMH","rguzman@med-metrix.com":"5.221-P - HMH","rordoyo@med-metrix.com":"5.221-P - HMH","lmagan@med-metrix.com":"5.221-P - HMH","svidanes@med-metrix.com":"5.221-P - HMH","dhernandez@med-metrix.com":"5.221-P - HMH","nmescarcha@med-metrix.com":"5.221-P - HMH","ppena@med-metrix.com":"5.221-P - HMH","acelis@med-metrix.com":"5.221-P - HMH","cstorricer@med-metrix.com":"5.222-P - HOLYOKE","hjmendoza@med-metrix.com":"5.222-P - HOLYOKE","jnavarro@med-metrix.com":"5.222-P - HOLYOKE","csandoval@med-metrix.com":"5.222-P - HOLYOKE","mdemagante@med-metrix.com":"5.222-P - HOLYOKE","palcarde@med-metrix.com":"5.222-P - HOLYOKE","gzabala@med-metrix.com":"5.227-P - ST JOE","jtiomale@med-metrix.com":"5.227-P - ST JOE","cfariscal@med-metrix.com":"5.227-P - ST JOE","jnerveza@med-metrix.com":"5.227-P - ST JOE","eluba@med-metrix.com":"5.227-P - ST JOE","kgchan@med-metrix.com":"5.227-P - ST JOE","amsibag@med-metrix.com":"5.227-P - ST JOE","jmacapagal@med-metrix.com":"5.227-P - ST JOE","mtrongco@med-metrix.com":"5.227-P - ST JOE","msalazar@med-metrix.com":"5.227-P - ST JOE","rocray@med-metrix.com":"5.227-P - ST JOE","cmonato@med-metrix.com":"5.227-P - ST JOE","eladroma@med-metrix.com":"5.227-P - ST JOE","jgamido@med-metrix.com":"5.227-P - ST JOE","mimperial@med-metrix.com":"4.260-H - ARS REP","jdeligiado@med-metrix.com":"3.320-E - VHC PB","rmataro@med-metrix.com":"3.100-E - BROOKLYN","jrebona@med-metrix.com":"3.310-E - VHC HB","kmalazarte@med-metrix.com":"3.310-E - VHC HB","agualba@med-metrix.com":"4.324-H - ARS HBCS BATON ROUGE GENERAL","ekwong@med-metrix.com":"4.020-H - COMPLEX CLAIMS","dabrique@med-metrix.com":"4.020-H - COMPLEX CLAIMS","airabagon@med-metrix.com":"4.020-H - COMPLEX CLAIMS","jmdiaz@med-metrix.com":"4.020-H - COMPLEX CLAIMS","adgonzales@med-metrix.com":"4.020-H - COMPLEX CLAIMS","racabilogan@med-metrix.com":"4.020-H - COMPLEX CLAIMS","apestanas@med-metrix.com":"4.020-H - COMPLEX CLAIMS","mamaligo@med-metrix.com":"4.020-H - COMPLEX CLAIMS","avenus@med-metrix.com":"4.020-H - COMPLEX CLAIMS","rolivares@med-metrix.com":"4.020-H - COMPLEX CLAIMS","jvillamor@med-metrix.com":"4.020-H - COMPLEX CLAIMS","smpioquid@med-metrix.com":"4.020-H - COMPLEX CLAIMS","gresnera@med-metrix.com":"4.020-H - COMPLEX CLAIMS","jdremulado@med-metrix.com":"4.020-H - COMPLEX CLAIMS","pguidotti@med-metrix.com":"4.020-H - COMPLEX CLAIMS","anromero@med-metrix.com":"4.260-H - ARS REP","pambe@med-metrix.com":"4.060-H - FORENSIC/HIM","gpaguia@med-metrix.com":"4.060-H - FORENSIC/HIM","myanila@med-metrix.com":"4.060-H - FORENSIC/HIM","jelabuguen@med-metrix.com":"4.020-H - COMPLEX CLAIMS","cjbalisalisa@med-metrix.com":"4.020-H - COMPLEX CLAIMS","jejavier@med-metrix.com":"4.020-H - COMPLEX CLAIMS","mmanaoat@med-metrix.com":"4.020-H - COMPLEX CLAIMS","judelgado@med-metrix.com":"5.221-P - HMH","rnaling@med-metrix.com":"5.221-P - HMH","jggarcia@med-metrix.com":"5.221-P - HMH","nmanzala@med-metrix.com":"5.221-P - HMH","pmangubat@med-metrix.com":"4.020-H - COMPLEX CLAIMS","kjcruz@med-metrix.com":"4.020-H - COMPLEX CLAIMS","emarpuri@med-metrix.com":"4.020-H - COMPLEX CLAIMS","jdisabelle@med-metrix.com":"4.020-H - COMPLEX CLAIMS","puyoco@med-metrix.com":"4.020-H - COMPLEX CLAIMS","rfabular@med-metrix.com":"4.060-H - FORENSIC/HIM","dvidal@med-metrix.com":"4.060-H - FORENSIC/HIM","jcana@med-metrix.com":"4.020-H - COMPLEX CLAIMS","tdumalaon@med-metrix.com":"4.060-H - FORENSIC/HIM","mjuanitas@med-metrix.com":"4.020-H - COMPLEX CLAIMS","edelrosario@med-metrix.com":"4.060-H - FORENSIC/HIM","cfrancia@med-metrix.com":"4.020-H - COMPLEX CLAIMS","mcalucab@med-metrix.com":"4.020-H - COMPLEX CLAIMS","kpaningbatan@med-metrix.com":"4.260-H - ARS REP","mbarlongo@med-metrix.com":"4.060-H - FORENSIC/HIM","mesidro@med-metrix.com":"4.060-H - FORENSIC/HIM","araranga@med-metrix.com":"4.060-H - FORENSIC/HIM","nsanandres@med-metrix.com":"4.060-H - FORENSIC/HIM","jbalubar@med-metrix.com":"5.233-P - AKUMIN","mgallego@med-metrix.com":"5.233-P - AKUMIN","jmalunes@med-metrix.com":"3.310-E - VHC HB","jmsoriano@med-metrix.com":"5.237-P - UINTAH BASIN MEDICAL CENTER","jorcino@med-metrix.com":"5.237-P - UINTAH BASIN MEDICAL CENTER","jmalana@med-metrix.com":"5.237-P - UINTAH BASIN MEDICAL CENTER","galbao@med-metrix.com":"4.060-H - FORENSIC/HIM","jbauso@med-metrix.com":"4.060-H - FORENSIC/HIM","caflores@med-metrix.com":"4.318-H - ARS HBCS HEALTH FIRST","lloyola@med-metrix.com":"4.318-H - ARS HBCS HEALTH FIRST","jamparo@med-metrix.com":"4.318-H - ARS HBCS HEALTH FIRST","signacio@med-metrix.com":"4.318-H - ARS HBCS HEALTH FIRST","ksamillano@med-metrix.com":"4.318-H - ARS HBCS HEALTH FIRST","aawid@med-metrix.com":"4.260-H - ARS REP","elozada@med-metrix.com":"4.260-H - ARS REP","ddajac@med-metrix.com":"5.220-P - HMCA","mcabalquino@med-metrix.com":"1.140-C - TRAINING & PROCESS IMPROVEMENT","jbalanquit@med-metrix.com":"1.140-C - TRAINING & PROCESS IMPROVEMENT","afreyes@med-metrix.com":"1.140-C - TRAINING & PROCESS IMPROVEMENT","ctibio@med-metrix.com":"1.140-C - TRAINING & PROCESS IMPROVEMENT","rartieda@med-metrix.com":"1.140-C - TRAINING & PROCESS IMPROVEMENT","rrimas@med-metrix.com":"1.140-C - TRAINING & PROCESS IMPROVEMENT","lrpalomares@med-metrix.com":"1.140-C - TRAINING & PROCESS IMPROVEMENT","hmorales@med-metrix.com":"1.140-C - TRAINING & PROCESS IMPROVEMENT","mcjose@med-metrix.com":"1.140-C - TRAINING & PROCESS IMPROVEMENT","eenojo@med-metrix.com":"1.140-C - TRAINING & PROCESS IMPROVEMENT","apadlan@med-metrix.com":"1.140-C - TRAINING & PROCESS IMPROVEMENT","jgealogo@med-metrix.com":"1.140-C - TRAINING & PROCESS IMPROVEMENT","eamorin@med-metrix.com":"1.140-C - TRAINING & PROCESS IMPROVEMENT","rsison@med-metrix.com":"1.140-C - TRAINING & PROCESS IMPROVEMENT","grricamonte@med-metrix.com":"1.140-C - TRAINING & PROCESS IMPROVEMENT","jtuble@med-metrix.com":"1.140-C - TRAINING & PROCESS IMPROVEMENT","palunan@med-metrix.com":"5.238-P - NORTHWELL OB","nremollena@med-metrix.com":"5.238-P - NORTHWELL OB","cmercado@med-metrix.com":"5.238-P - NORTHWELL OB","gmunoz@med-metrix.com":"5.238-P - NORTHWELL OB","wcatral@med-metrix.com":"5.238-P - NORTHWELL OB","solpindo@med-metrix.com":"4.260-H - ARS REP","abalansag@med-metrix.com":"4.260-H - ARS REP","rclaros@med-metrix.com":"4.260-H - ARS REP","rquiming@med-metrix.com":"4.260-H - ARS REP","awatt@med-metrix.com":"4.260-H - ARS REP","jgozun@med-metrix.com":"4.260-H - ARS REP","icabasis@med-metrix.com":"4.260-H - ARS REP","cgcruz@med-metrix.com":"4.260-H - ARS REP","uvelarde@med-metrix.com":"5.240-P - CONFLUENCE HEALTH","jpenaflor@med-metrix.com":"5.240-P - CONFLUENCE HEALTH","risilvestre@med-metrix.com":"5.240-P - CONFLUENCE HEALTH","joinfante@med-metrix.com":"5.240-P - CONFLUENCE HEALTH","miso@med-metrix.com":"5.240-P - CONFLUENCE HEALTH","mjbonabon@med-metrix.com":"5.240-P - CONFLUENCE HEALTH","olalcala@med-metrix.com":"5.240-P - CONFLUENCE HEALTH","jwmorales@med-metrix.com":"5.240-P - CONFLUENCE HEALTH","jserrano@med-metrix.com":"5.240-P - CONFLUENCE HEALTH","mbsanchez@med-metrix.com":"4.060-H - FORENSIC/HIM","smanlises@med-metrix.com":"4.313-H - ARS HBCS CARE NEW ENGLAND","mcasia@med-metrix.com":"4.313-H - ARS HBCS CARE NEW ENGLAND","jencontro@med-metrix.com":"4.313-H - ARS HBCS CARE NEW ENGLAND","ivicente@med-metrix.com":"4.260-H - ARS REP","fdacanay@med-metrix.com":"4.260-H - ARS REP","vyburan@med-metrix.com":"4.260-H - ARS REP","ademerin@med-metrix.com":"4.260-H - ARS REP","jarispe@med-metrix.com":"4.060-H - FORENSIC/HIM","blaurio@med-metrix.com":"4.060-H - FORENSIC/HIM","elingon@med-metrix.com":"4.060-H - FORENSIC/HIM","rbuensuceso@med-metrix.com":"4.060-H - FORENSIC/HIM","garcinue@med-metrix.com":"4.260-H - ARS REP","ropenaranda@med-metrix.com":"4.260-H - ARS REP","rdeguzman@med-metrix.com":"4.260-H - ARS REP","jtobias@med-metrix.com":"4.260-H - ARS REP","emdelacruz@med-metrix.com":"4.060-H - FORENSIC/HIM","kituazon@med-metrix.com":"4.060-H - FORENSIC/HIM","motoman@med-metrix.com":"5.242-P - RCCA","jberdin@med-metrix.com":"5.242-P - RCCA","jjcelestra@med-metrix.com":"5.242-P - RCCA","jserafin@med-metrix.com":"4.060-H - FORENSIC/HIM","jhrobles@med-metrix.com":"4.060-H - FORENSIC/HIM","kdeguzman@med-metrix.com":"4.060-H - FORENSIC/HIM","mbmoral@med-metrix.com":"4.060-H - FORENSIC/HIM","mconde@med-metrix.com":"4.060-H - FORENSIC/HIM","egokesan@med-metrix.com":"4.060-H - FORENSIC/HIM","myanzon@med-metrix.com":"4.060-H - FORENSIC/HIM","aligoro@med-metrix.com":"4.060-H - FORENSIC/HIM","cencarnacion@med-metrix.com":"4.060-H - FORENSIC/HIM","liranoco@med-metrix.com":"4.060-H - FORENSIC/HIM","hjavier@med-metrix.com":"3.420-E - OBH COMPLEX CLAIMS","jmarquez@med-metrix.com":"3.450-E - OBH HB","kparrocho@med-metrix.com":"3.450-E - OBH HB","ansantos@med-metrix.com":"3.450-E - OBH HB","jerey@med-metrix.com":"3.450-E - OBH HB","cbanac@med-metrix.com":"3.450-E - OBH HB","cfidelson@med-metrix.com":"3.450-E - OBH HB","jopenaflor@med-metrix.com":"3.450-E - OBH HB","sceron@med-metrix.com":"3.450-E - OBH HB","jpatubo@med-metrix.com":"3.450-E - OBH HB","truto@med-metrix.com":"3.450-E - OBH HB","cansino@med-metrix.com":"3.450-E - OBH HB","nbegornia@med-metrix.com":"3.450-E - OBH HB","skayat@med-metrix.com":"3.450-E - OBH HB","jsarucam@med-metrix.com":"3.450-E - OBH HB","qjbalean@med-metrix.com":"3.450-E - OBH HB","eremandaban@med-metrix.com":"3.450-E - OBH HB","minepomuceno@med-metrix.com":"3.450-E - OBH HB","mcastillo@med-metrix.com":"3.450-E - OBH HB","mceballos@med-metrix.com":"3.470-E - OBH PB","aloto@med-metrix.com":"3.470-E - OBH PB","kdelmendo@med-metrix.com":"3.470-E - OBH PB","edpulgado@med-metrix.com":"3.470-E - OBH PB","jedelrosario@med-metrix.com":"3.470-E - OBH PB","tmbalatayo@med-metrix.com":"3.470-E - OBH PB","raeliciano@med-metrix.com":"3.470-E - OBH PB","vbanaag@med-metrix.com":"3.470-E - OBH PB","sogonzales@med-metrix.com":"3.470-E - OBH PB","bbinos@med-metrix.com":"3.470-E - OBH PB","pmayuyo@med-metrix.com":"3.470-E - OBH PB","ocastillo@med-metrix.com":"3.470-E - OBH PB","goroc@med-metrix.com":"3.470-E - OBH PB","mbacod@med-metrix.com":"3.470-E - OBH PB","relan@med-metrix.com":"3.470-E - OBH PB","zgipit@med-metrix.com":"4.318-H - ARS HBCS HEALTH FIRST","kdelacruz@med-metrix.com":"5.245-P - FMOL","ltadiarca@med-metrix.com":"5.245-P - FMOL","sminosa@med-metrix.com":"5.245-P - FMOL","jarnoco@med-metrix.com":"5.245-P - FMOL","pavila@med-metrix.com":"4.260-H - ARS REP","smelendres@med-metrix.com":"4.260-H - ARS REP","epallasigue@med-metrix.com":"4.260-H - ARS REP","kcoruna@med-metrix.com":"4.260-H - ARS REP","gpilapil@med-metrix.com":"4.260-H - ARS REP","bcadelina@med-metrix.com":"4.260-H - ARS REP","rbalagtas@med-metrix.com":"4.260-H - ARS REP","marsantos@med-metrix.com":"4.260-H - ARS REP","jcaracuel@med-metrix.com":"4.260-H - ARS REP","daggabao@med-metrix.com":"4.260-H - ARS REP","ksaad@med-metrix.com":"4.260-H - ARS REP","jlucas@med-metrix.com":"4.260-H - ARS REP","rbaculanta@med-metrix.com":"4.260-H - ARS REP","jdardo@med-metrix.com":"4.260-H - ARS REP","jsagrado@med-metrix.com":"4.260-H - ARS REP","nfontalba@med-metrix.com":"4.260-H - ARS REP","jmores@med-metrix.com":"5.246-P - CONWAY","kjiro@med-metrix.com":"5.246-P - CONWAY","mdelosreyes@med-metrix.com":"5.246-P - CONWAY","drrivera@med-metrix.com":"5.246-P - CONWAY","vbalderama@med-metrix.com":"4.260-H - ARS REP","jealcantara@med-metrix.com":"4.260-H - ARS REP","jolecaros@med-metrix.com":"4.260-H - ARS REP","naabecia@med-metrix.com":"4.260-H - ARS REP","cdonado@med-metrix.com":"4.260-H - ARS REP","dcastillon@med-metrix.com":"4.260-H - ARS REP","imoises@med-metrix.com":"4.260-H - ARS REP","rsanpedro@med-metrix.com":"4.260-H - ARS REP","mtaruquin@med-metrix.com":"4.260-H - ARS REP","jarante@med-metrix.com":"4.260-H - ARS REP","amarababon@med-metrix.com":"4.260-H - ARS REP","pmaniquis@med-metrix.com":"4.260-H - ARS REP","rpascual@med-metrix.com":"4.260-H - ARS REP","aestanislao@med-metrix.com":"4.260-H - ARS REP","mtabios@med-metrix.com":"4.260-H - ARS REP","lclarin@med-metrix.com":"4.260-H - ARS REP","jasdeleon@med-metrix.com":"4.260-H - ARS REP","jcayabyab@med-metrix.com":"4.260-H - ARS REP","mbmoreno@med-metrix.com":"4.260-H - ARS REP","mavaldez@med-metrix.com":"4.260-H - ARS REP","hespinosa@med-metrix.com":"4.260-H - ARS REP","ccambaling@med-metrix.com":"4.260-H - ARS REP","svelarde@med-metrix.com":"4.260-H - ARS REP","edasigan@med-metrix.com":"5.247-P - BALANCE HEALTH","ptolentino@med-metrix.com":"5.247-P - BALANCE HEALTH","jtubo@med-metrix.com":"5.247-P - BALANCE HEALTH","ccallada@med-metrix.com":"5.238-P - NORTHWELL OB","dmanahan@med-metrix.com":"5.238-P - NORTHWELL OB","ribanez@med-metrix.com":"5.238-P - NORTHWELL OB","gsalvatierra@med-metrix.com":"5.238-P - NORTHWELL OB","mzamoras@med-metrix.com":"4.260-H - ARS REP","jmacalinao@med-metrix.com":"4.260-H - ARS REP","jespanola@med-metrix.com":"4.260-H - ARS REP","jecarmen@med-metrix.com":"4.260-H - ARS REP","rrbundalian@med-metrix.com":"4.260-H - ARS REP","pcmar@med-metrix.com":"4.260-H - ARS REP","lbulala@med-metrix.com":"4.260-H - ARS REP","dventurina@med-metrix.com":"4.260-H - ARS REP","hvillarivera@med-metrix.com":"4.260-H - ARS REP","earbolado@med-metrix.com":"4.260-H - ARS REP","jsidic@med-metrix.com":"4.260-H - ARS REP","prbautista@med-metrix.com":"4.260-H - ARS REP","archavez@med-metrix.com":"4.020-H - COMPLEX CLAIMS","ermanuel@med-metrix.com":"4.020-H - COMPLEX CLAIMS","lbagay@med-metrix.com":"4.020-H - COMPLEX CLAIMS","qleopoldo@med-metrix.com":"5.248-P - ARCHWELL HEALTH","lbilloso@med-metrix.com":"5.248-P - ARCHWELL HEALTH","jteengfo@med-metrix.com":"5.248-P - ARCHWELL HEALTH","rtabieros@med-metrix.com":"5.248-P - ARCHWELL HEALTH","erdelacruz@med-metrix.com":"5.248-P - ARCHWELL HEALTH","ipamittan@med-metrix.com":"4.260-H - ARS REP","alloquias@med-metrix.com":"4.260-H - ARS REP","jmmartinez@med-metrix.com":"4.260-H - ARS REP","msalonga@med-metrix.com":"4.020-H - COMPLEX CLAIMS","mnator@med-metrix.com":"4.020-H - COMPLEX CLAIMS","nvero@med-metrix.com":"4.260-H - ARS REP","arfrancisco@med-metrix.com":"4.260-H - ARS REP","rdepuno@med-metrix.com":"4.260-H - ARS REP","rcataluna@med-metrix.com":"5.251-P \u2013 HALIFAX","rcid@med-metrix.com":"5.251-P \u2013 HALIFAX","mdealday@med-metrix.com":"5.251-P \u2013 HALIFAX","eperalta@med-metrix.com":"5.251-P \u2013 HALIFAX","mbernales@med-metrix.com":"5.251-P \u2013 HALIFAX","maramos@med-metrix.com":"5.251-P \u2013 HALIFAX","mvbausing@med-metrix.com":"5.251-P \u2013 HALIFAX","jscastro@med-metrix.com":"5.251-P \u2013 HALIFAX","malegre@med-metrix.com":"5.251-P \u2013 HALIFAX","mmanlimid@med-metrix.com":"5.251-P \u2013 HALIFAX","alecaros@med-metrix.com":"5.251-P \u2013 HALIFAX","jogalvez@med-metrix.com":"5.251-P \u2013 HALIFAX","dmayor@med-metrix.com":"5.249-P - BORLAND GROOVER","ialusanta@med-metrix.com":"5.249-P - BORLAND GROOVER","hmonares@med-metrix.com":"5.249-P - BORLAND GROOVER","jlabay@med-metrix.com":"4.323-H - ARS HBCS SISTERS OF CHARITY","jlee@med-metrix.com":"4.323-H - ARS HBCS SISTERS OF CHARITY","jsangcap@med-metrix.com":"4.323-H - ARS HBCS SISTERS OF CHARITY","mmagat@med-metrix.com":"4.323-H - ARS HBCS SISTERS OF CHARITY","jyalong@med-metrix.com":"4.323-H - ARS HBCS SISTERS OF CHARITY","nhubilla@med-metrix.com":"4.318-H - ARS HBCS HEALTH FIRST","cmanantan@med-metrix.com":"5.222-P - HOLYOKE","mpadayao@med-metrix.com":"5.222-P - HOLYOKE","jfaa@med-metrix.com":"4.020-H - COMPLEX CLAIMS","lalpuerto@med-metrix.com":"4.020-H - COMPLEX CLAIMS","mdomingo@med-metrix.com":"4.020-H - COMPLEX CLAIMS","msingpet@med-metrix.com":"4.020-H - COMPLEX CLAIMS","adelrio@med-metrix.com":"4.020-H - COMPLEX CLAIMS","rlauzon@med-metrix.com":"5.212-P - ASTERA","milagan@med-metrix.com":"5.212-P - ASTERA","msalamero@med-metrix.com":"5.212-P - ASTERA","bpagaran@med-metrix.com":"5.238-P - NORTHWELL OB","lmateo@med-metrix.com":"5.252-P \u2013 ALLEVIO","dcelino@med-metrix.com":"5.252-P \u2013 ALLEVIO","ktipono@med-metrix.com":"5.252-P \u2013 ALLEVIO","mmsantos@med-metrix.com":"5.227-P - ST JOE","ebetito@med-metrix.com":"4.020-H - COMPLEX CLAIMS","mtorres@med-metrix.com":"4.020-H - COMPLEX CLAIMS","jkpallingayan@med-metrix.com":"4.020-H - COMPLEX CLAIMS","dabalane@med-metrix.com":"5.242-P - RCCA","rdimco@med-metrix.com":"5.247-P - BALANCE HEALTH","fdsibayan@med-metrix.com":"5.247-P - BALANCE HEALTH","toraye@med-metrix.com":"5.221-P - HMH","kgarcia@med-metrix.com":"5.221-P - HMH","rperamide@med-metrix.com":"4.260-H - ARS REP","dpangantihon@med-metrix.com":"4.260-H - ARS REP","lmaitem@med-metrix.com":"4.260-H - ARS REP","jmanibog@med-metrix.com":"4.260-H - ARS REP","aecandelaria@med-metrix.com":"4.260-H - ARS REP","jparayday@med-metrix.com":"4.260-H - ARS REP","riguzman@med-metrix.com":"4.260-H - ARS REP","daunario@med-metrix.com":"5.245-P - FMOL","ddecena@med-metrix.com":"5.245-P - FMOL","mblasquillo@med-metrix.com":"5.245-P - FMOL","allauderes@med-metrix.com":"4.020-H - COMPLEX CLAIMS","jfuenzalida@med-metrix.com":"5.251-P \u2013 HALIFAX","bumali@med-metrix.com":"4.260-H - ARS REP","malabolabo@med-metrix.com":"4.260-H - ARS REP","masalvador@med-metrix.com":"4.260-H - ARS REP","joocampo@med-metrix.com":"4.260-H - ARS REP","resteban@med-metrix.com":"4.260-H - ARS REP","lcuna@med-metrix.com":"4.260-H - ARS REP","mamanuel@med-metrix.com":"4.260-H - ARS REP","ppgloriane@med-metrix.com":"4.260-H - ARS REP","lcampus@med-metrix.com":"4.260-H - ARS REP","jvelias@med-metrix.com":"4.260-H - ARS REP","handayan@med-metrix.com":"4.260-H - ARS REP","elgonzales@med-metrix.com":"4.260-H - ARS REP","sdeborja@med-metrix.com":"4.260-H - ARS REP","mnave@med-metrix.com":"4.260-H - ARS REP","lbombita@med-metrix.com":"4.260-H - ARS REP","elalvarez@med-metrix.com":"4.260-H - ARS REP","maltares@med-metrix.com":"4.260-H - ARS REP","nalamatao@med-metrix.com":"4.260-H - ARS REP","jearellano@med-metrix.com":"4.260-H - ARS REP","hjjustado@med-metrix.com":"4.260-H - ARS REP","juromero@med-metrix.com":"4.260-H - ARS REP","sgabriela@med-metrix.com":"4.260-H - ARS REP","dmlasic@med-metrix.com":"4.260-H - ARS REP","ccorsega@med-metrix.com":"5.253-P - CHRISTIANA CARE","lgalario@med-metrix.com":"5.253-P - CHRISTIANA CARE","jgarbin@med-metrix.com":"5.253-P - CHRISTIANA CARE","jrevoltar@med-metrix.com":"5.253-P - CHRISTIANA CARE","mtungala@med-metrix.com":"5.253-P - CHRISTIANA CARE","rfornal@med-metrix.com":"4.260-H - ARS REP","tsierra@med-metrix.com":"4.260-H - ARS REP","pgcrisostomo@med-metrix.com":"5.220-P - HMCA","jregalario@med-metrix.com":"4.260-H - ARS REP","rwahing@med-metrix.com":"4.260-H - ARS REP","jaarroyo@med-metrix.com":"4.260-H - ARS REP","gtolentino@med-metrix.com":"4.260-H - ARS REP","jmagtibay@med-metrix.com":"4.260-H - ARS REP","adagandal@med-metrix.com":"4.260-H - ARS REP","hcastillo@med-metrix.com":"4.230-H - ARS MGMT (DIR+OA)","asanglay@med-metrix.com":"4.020-H - COMPLEX CLAIMS","ribuan@med-metrix.com":"4.060-H - FORENSIC/HIM","dmancio@med-metrix.com":"4.060-H - FORENSIC/HIM","jesalvador@med-metrix.com":"4.060-H - FORENSIC/HIM","salico@med-metrix.com":"4.060-H - FORENSIC/HIM","abillena@med-metrix.com":"4.060-H - FORENSIC/HIM","cremot@med-metrix.com":"4.260-H - ARS REP","lmalate@med-metrix.com":"4.260-H - ARS REP","jsuarez@med-metrix.com":"4.260-H - ARS REP","jhireyes@med-metrix.com":"4.020-H - COMPLEX CLAIMS","amarcelino@med-metrix.com":"4.260-H - ARS REP","mdelapena@med-metrix.com":"4.260-H - ARS REP","mortile@med-metrix.com":"4.260-H - ARS REP","jtapia@med-metrix.com":"4.260-H - ARS REP","mjtabaco@med-metrix.com":"4.260-H - ARS REP","kjardenil@med-metrix.com":"4.260-H - ARS REP","mdbaat@med-metrix.com":"5.238-P - NORTHWELL OB","jaferrer@med-metrix.com":"4.260-H - ARS REP","zbandahala@med-metrix.com":"1.140-C - TRAINING & PROCESS IMPROVEMENT","rofernes@med-metrix.com":"1.140-C - TRAINING & PROCESS IMPROVEMENT","kvbautista@med-metrix.com":"1.140-C - TRAINING & PROCESS IMPROVEMENT","jrefran@med-metrix.com":"1.140-C - TRAINING & PROCESS IMPROVEMENT","avargas@med-metrix.com":"1.140-C - TRAINING & PROCESS IMPROVEMENT","aaparas@med-metrix.com":"1.140-C - TRAINING & PROCESS IMPROVEMENT","jporazo@med-metrix.com":"1.140-C - TRAINING & PROCESS IMPROVEMENT","saferrer@med-metrix.com":"1.140-C - TRAINING & PROCESS IMPROVEMENT","ppatawaran@med-metrix.com":"1.070-C - FINANCE","jarma@med-metrix.com":"1.120-C - TECH SUPPORT & INFRASTRUCTURE","idfernandez@med-metrix.com":"1.120-C - TECH SUPPORT & INFRASTRUCTURE","mmagleo@med-metrix.com":"1.070-C - FINANCE","jtinsay@med-metrix.com":"4.020-H - COMPLEX CLAIMS","ptan@med-metrix.com":"4.020-H - COMPLEX CLAIMS","etoroba@med-metrix.com":"4.020-H - COMPLEX CLAIMS","apornillosa@med-metrix.com":"4.020-H - COMPLEX CLAIMS","achua@med-metrix.com":"4.020-H - COMPLEX CLAIMS","cbacani@med-metrix.com":"4.020-H - COMPLEX CLAIMS","aiso@med-metrix.com":"5.150-PS - OFFICE ASSISTANT SHARED SERVICES","dsangco@med-metrix.com":"5.150-PS - OFFICE ASSISTANT SHARED SERVICES","jreola@med-metrix.com":"4.4101-H - SELF PAY HBCS","jenaje@med-metrix.com":"4.4101-H - SELF PAY HBCS","langel@med-metrix.com":"4.4101-H - SELF PAY HBCS","leniceo@med-metrix.com":"4.4101-H - SELF PAY HBCS","mdello@med-metrix.com":"4.4101-H - SELF PAY HBCS","amaninang@med-metrix.com":"4.4101-H - SELF PAY HBCS","aestranero@med-metrix.com":"4.4101-H - SELF PAY HBCS","mfadriquela@med-metrix.com":"4.4101-H - SELF PAY HBCS","knatividad@med-metrix.com":"4.4101-H - SELF PAY HBCS","faquino@med-metrix.com":"4.4101-H - SELF PAY HBCS","glandayan@med-metrix.com":"4.4101-H - SELF PAY HBCS","ibuere@med-metrix.com":"4.4101-H - SELF PAY HBCS","srosalejos@med-metrix.com":"4.4101-H - SELF PAY HBCS","jcatape@med-metrix.com":"4.4101-H - SELF PAY HBCS","rborricano@med-metrix.com":"4.4101-H - SELF PAY HBCS","cjalique@med-metrix.com":"4.4101-H - SELF PAY HBCS","nignacio@med-metrix.com":"4.4101-H - SELF PAY HBCS","mbernal@med-metrix.com":"4.4101-H - SELF PAY HBCS","lmonton@med-metrix.com":"3.430-E - OBH CONTACT CENTER","rtorres@med-metrix.com":"4.4101-H - SELF PAY HBCS","kvargas@med-metrix.com":"4.4101-H - SELF PAY HBCS","qgalang@med-metrix.com":"4.4101-H - SELF PAY HBCS","pcervantes@med-metrix.com":"4.4101-H - SELF PAY HBCS","jcatayna@med-metrix.com":"4.4101-H - SELF PAY HBCS","mbasawan@med-metrix.com":"4.4101-H - SELF PAY HBCS","bgavarra@med-metrix.com":"4.4101-H - SELF PAY HBCS","chgarcia@med-metrix.com":"4.4101-H - SELF PAY HBCS","arebadeo@med-metrix.com":"4.4101-H - SELF PAY HBCS","jmanansala@med-metrix.com":"4.4101-H - SELF PAY HBCS","avirata@med-metrix.com":"4.031-H - DENIALS MANAGEMENT","dnaval@med-metrix.com":"5.254-P \u2013 ATHLETICO","lnatano@med-metrix.com":"5.254-P \u2013 ATHLETICO","ccasino@med-metrix.com":"5.254-P \u2013 ATHLETICO","aafernandez@med-metrix.com":"5.237-P - UINTAH BASIN MEDICAL CENTER","adimapilis@med-metrix.com":"4.4102-H - SELF PAY HBCS","rcualbar@med-metrix.com":"4.4102-H - SELF PAY HBCS","mroxas@med-metrix.com":"4.4102-H - SELF PAY HBCS","rchicano@med-metrix.com":"4.4102-H - SELF PAY HBCS","kmonacillo@med-metrix.com":"4.4102-H - SELF PAY HBCS","smirarza@med-metrix.com":"4.4102-H - SELF PAY HBCS","jdelaluna@med-metrix.com":"4.4102-H - SELF PAY HBCS","ccatague@med-metrix.com":"4.4102-H - SELF PAY HBCS","eanano@med-metrix.com":"4.4102-H - SELF PAY HBCS","mrabe@med-metrix.com":"4.4102-H - SELF PAY HBCS","nsancheta@med-metrix.com":"4.4102-H - SELF PAY HBCS","masierra@med-metrix.com":"4.4102-H - SELF PAY HBCS","jnuevo@med-metrix.com":"4.4102-H - SELF PAY HBCS","pgenosas@med-metrix.com":"4.4102-H - SELF PAY HBCS","varrieta@med-metrix.com":"4.4102-H - SELF PAY HBCS","ptuazon@med-metrix.com":"4.4102-H - SELF PAY HBCS","rllano@med-metrix.com":"4.4102-H - SELF PAY HBCS","vsahagun@med-metrix.com":"4.4102-H - SELF PAY HBCS","hzbautista@med-metrix.com":"4.4102-H - SELF PAY HBCS","cmcubelo@med-metrix.com":"4.4102-H - SELF PAY HBCS","rcabreza@med-metrix.com":"4.4102-H - SELF PAY HBCS","jconcha@med-metrix.com":"4.4102-H - SELF PAY HBCS","ralday@med-metrix.com":"4.4102-H - SELF PAY HBCS","mrogacion@med-metrix.com":"4.4102-H - SELF PAY HBCS","mjaromay@med-metrix.com":"4.4102-H - SELF PAY HBCS","dllanera@med-metrix.com":"4.4102-H - SELF PAY HBCS","rbalani@med-metrix.com":"4.4102-H - SELF PAY HBCS","anabor@med-metrix.com":"4.4102-H - SELF PAY HBCS","isupan@med-metrix.com":"4.4102-H - SELF PAY HBCS","prabe@med-metrix.com":"4.4102-H - SELF PAY HBCS","kragonot@med-metrix.com":"4.4102-H - SELF PAY HBCS","kclameg@med-metrix.com":"4.4102-H - SELF PAY HBCS","cflores@med-metrix.com":"4.4102-H - SELF PAY HBCS","mmobe@med-metrix.com":"4.4102-H - SELF PAY HBCS","rhpecana@med-metrix.com":"4.4102-H - SELF PAY HBCS","lpadullo@med-metrix.com":"4.4102-H - SELF PAY HBCS","jrfranco@med-metrix.com":"4.4102-H - SELF PAY HBCS","emagtira@med-metrix.com":"4.4102-H - SELF PAY HBCS","gnacino@med-metrix.com":"4.4102-H - SELF PAY HBCS","jpetines@med-metrix.com":"4.4102-H - SELF PAY HBCS","rgil@med-metrix.com":"4.4102-H - SELF PAY HBCS","aramel@med-metrix.com":"4.4102-H - SELF PAY HBCS","roclaronino@med-metrix.com":"4.4102-H - SELF PAY HBCS","jbayot@med-metrix.com":"4.4102-H - SELF PAY HBCS","aabrillo@med-metrix.com":"4.4102-H - SELF PAY HBCS","mrgaitano@med-metrix.com":"4.4102-H - SELF PAY HBCS","ccabancla@med-metrix.com":"4.4102-H - SELF PAY HBCS","dgabas@med-metrix.com":"4.4102-H - SELF PAY HBCS","arabin@med-metrix.com":"4.4102-H - SELF PAY HBCS","jedelacruz@med-metrix.com":"4.4102-H - SELF PAY HBCS","ggaviola@med-metrix.com":"4.4102-H - SELF PAY HBCS","jobis@med-metrix.com":"4.4102-H - SELF PAY HBCS","jdichosa@med-metrix.com":"4.4102-H - SELF PAY HBCS","asabado@med-metrix.com":"4.4102-H - SELF PAY HBCS","amercado@med-metrix.com":"4.4102-H - SELF PAY HBCS","jbalagtas@med-metrix.com":"4.4102-H - SELF PAY HBCS","cbutin@med-metrix.com":"4.4102-H - SELF PAY HBCS","sbarcibal@med-metrix.com":"4.4102-H - SELF PAY HBCS","kolino@med-metrix.com":"4.4102-H - SELF PAY HBCS","sfsancho@med-metrix.com":"4.4102-H - SELF PAY HBCS","rcamilon@med-metrix.com":"4.4102-H - SELF PAY HBCS","skatimbang@med-metrix.com":"4.4102-H - SELF PAY HBCS","talonzo@med-metrix.com":"4.4102-H - SELF PAY HBCS","jvalladores@med-metrix.com":"4.4102-H - SELF PAY HBCS","agoloyugo@med-metrix.com":"4.4102-H - SELF PAY HBCS","jmurillo@med-metrix.com":"4.4102-H - SELF PAY HBCS","johenriquez@med-metrix.com":"4.4102-H - SELF PAY HBCS","jpalompon@med-metrix.com":"4.4102-H - SELF PAY HBCS","aespana@med-metrix.com":"4.4102-H - SELF PAY HBCS","ibillones@med-metrix.com":"4.4102-H - SELF PAY HBCS","jalejo@med-metrix.com":"4.4102-H - SELF PAY HBCS","aluna@med-metrix.com":"4.4102-H - SELF PAY HBCS","jtagle@med-metrix.com":"4.4102-H - SELF PAY HBCS","igentica@med-metrix.com":"4.4102-H - SELF PAY HBCS","josoriano@med-metrix.com":"4.4102-H - SELF PAY HBCS","ajaneo@med-metrix.com":"4.4102-H - SELF PAY HBCS","jlinantud@med-metrix.com":"4.4102-H - SELF PAY HBCS","jdeleon@med-metrix.com":"4.4102-H - SELF PAY HBCS","fdecojos@med-metrix.com":"4.4102-H - SELF PAY HBCS","jcapilos@med-metrix.com":"4.4102-H - SELF PAY HBCS","gcortan@med-metrix.com":"4.4102-H - SELF PAY HBCS","rongbueco@med-metrix.com":"3.430-E - OBH CONTACT CENTER","rangeles@med-metrix.com":"3.430-E - OBH CONTACT CENTER","mdelossantos@med-metrix.com":"3.430-E - OBH CONTACT CENTER","dfortus@med-metrix.com":"3.430-E - OBH CONTACT CENTER","mgaddong@med-metrix.com":"3.430-E - OBH CONTACT CENTER","jdelapenia@med-metrix.com":"3.430-E - OBH CONTACT CENTER","macuenco@med-metrix.com":"3.430-E - OBH CONTACT CENTER","gsanpedro@med-metrix.com":"5.245-P - FMOL","rtoreta@med-metrix.com":"5.245-P - FMOL","jpresnillo@med-metrix.com":"4.4102-H - SELF PAY HBCS","icomeque@med-metrix.com":"4.4102-H - SELF PAY HBCS","asanpedro@med-metrix.com":"4.4102-H - SELF PAY HBCS","wariola@med-metrix.com":"4.4102-H - SELF PAY HBCS","ptimbal@med-metrix.com":"4.4102-H - SELF PAY HBCS","rafernandez@med-metrix.com":"4.4102-H - SELF PAY HBCS","llazaro@med-metrix.com":"4.4102-H - SELF PAY HBCS","averidiano@med-metrix.com":"4.4102-H - SELF PAY HBCS","langay@med-metrix.com":"4.4102-H - SELF PAY HBCS","jdichoso@med-metrix.com":"4.4102-H - SELF PAY HBCS","efloralde@med-metrix.com":"4.4102-H - SELF PAY HBCS","rcatayoc@med-metrix.com":"4.4102-H - SELF PAY HBCS","jcalpis@med-metrix.com":"4.4102-H - SELF PAY HBCS","jemartinez@med-metrix.com":"4.4102-H - SELF PAY HBCS","mmangeles@med-metrix.com":"4.4102-H - SELF PAY HBCS","ldeliarte@med-metrix.com":"4.4102-H - SELF PAY HBCS","jcfranco@med-metrix.com":"4.4102-H - SELF PAY HBCS","joperez@med-metrix.com":"4.4102-H - SELF PAY HBCS","mnaty@med-metrix.com":"4.4102-H - SELF PAY HBCS","dsomosot@med-metrix.com":"4.4102-H - SELF PAY HBCS","mrubio@med-metrix.com":"4.4102-H - SELF PAY HBCS","jpasahol@med-metrix.com":"4.4102-H - SELF PAY HBCS","malbor@med-metrix.com":"4.4102-H - SELF PAY HBCS","ssantos@med-metrix.com":"4.4102-H - SELF PAY HBCS","rgcabreza@med-metrix.com":"4.4102-H - SELF PAY HBCS","adelosreyes@med-metrix.com":"4.4102-H - SELF PAY HBCS","jreofrir@med-metrix.com":"4.4102-H - SELF PAY HBCS","pcpenamora@med-metrix.com":"4.4102-H - SELF PAY HBCS","melopez@med-metrix.com":"4.4102-H - SELF PAY HBCS","hdguia@med-metrix.com":"4.4102-H - SELF PAY HBCS","mealo@med-metrix.com":"4.4102-H - SELF PAY HBCS","jcabasal@med-metrix.com":"4.4102-H - SELF PAY HBCS","ngigante@med-metrix.com":"4.4102-H - SELF PAY HBCS","ryano@med-metrix.com":"4.4102-H - SELF PAY HBCS","smcirilo@med-metrix.com":"4.4102-H - SELF PAY HBCS","lmonforte@med-metrix.com":"4.4102-H - SELF PAY HBCS","jmontalban@med-metrix.com":"4.4102-H - SELF PAY HBCS","moculares@med-metrix.com":"4.4102-H - SELF PAY HBCS","dbongcahig@med-metrix.com":"4.4102-H - SELF PAY HBCS","jingalla@med-metrix.com":"4.4102-H - SELF PAY HBCS","mfmatias@med-metrix.com":"4.4102-H - SELF PAY HBCS","jnepomuceno@med-metrix.com":"4.4102-H - SELF PAY HBCS","eborja@med-metrix.com":"4.4102-H - SELF PAY HBCS","scolinares@med-metrix.com":"4.4102-H - SELF PAY HBCS","mgaspar@med-metrix.com":"5.211-P - APG","pquijano@med-metrix.com":"5.211-P - APG","vdomagtoy@med-metrix.com":"5.211-P - APG","rcadalin@med-metrix.com":"5.211-P - APG","egonzaga@med-metrix.com":"5.211-P - APG","anicolas@med-metrix.com":"5.212-P - ASTERA","jalibangbang@med-metrix.com":"5.212-P - ASTERA","reule@med-metrix.com":"5.212-P - ASTERA","jearroyo@med-metrix.com":"5.212-P - ASTERA","pnavarra@med-metrix.com":"5.212-P - ASTERA","nsanjuan@med-metrix.com":"5.212-P - ASTERA","magarcia@med-metrix.com":"5.212-P - ASTERA","cpineda@med-metrix.com":"5.220-P - HMCA","cpusing@med-metrix.com":"5.220-P - HMCA","jalarcon@med-metrix.com":"5.231-P - NEIGHBORHOOD HEALTH SERVICES CORP","fserrano@med-metrix.com":"5.225-P - NEVADA HEART","apvalerio@med-metrix.com":"5.225-P - NEVADA HEART","iubando@med-metrix.com":"5.225-P - NEVADA HEART","jlomibao@med-metrix.com":"5.225-P - NEVADA HEART","jefondo@med-metrix.com":"3.430-E - OBH CONTACT CENTER","mnapitan@med-metrix.com":"4.260-H - ARS REP","jdellava@med-metrix.com":"3.310-E - VHC HB","meguia@med-metrix.com":"3.310-E - VHC HB","jjalmasco@med-metrix.com":"3.320-E - VHC PB","rboquio@med-metrix.com":"3.320-E - VHC PB","ctagana@med-metrix.com":"3.320-E - VHC PB","rtinambacan@med-metrix.com":"1.080-C - HUMAN RESOURCES","nagao@med-metrix.com":"1.080-C - HUMAN RESOURCES","jvgo@med-metrix.com":"4.080-H - PHYSICIAN ADVISOR","mrdomagas@med-metrix.com":"4.080-H - PHYSICIAN ADVISOR","aabejuro@med-metrix.com":"4.080-H - PHYSICIAN ADVISOR","jorolfo@med-metrix.com":"4.080-H - PHYSICIAN ADVISOR","glestrella@med-metrix.com":"1.010-C - ANALYTICS","aderano@med-metrix.com":"1.010-C - ANALYTICS","jguarino@med-metrix.com":"5.217-P - ENGLEWOOD","mgenobaten@med-metrix.com":"5.217-P - ENGLEWOOD","rjcruz@med-metrix.com":"5.217-P - ENGLEWOOD","monduran@med-metrix.com":"5.221-P - HMH","nhadji-hassan@med-metrix.com":"5.221-P - HMH","aechavarre@med-metrix.com":"5.221-P - HMH","jcaalim@med-metrix.com":"5.217-P - ENGLEWOOD","anrefuerzo@med-metrix.com":"5.217-P - ENGLEWOOD","aismael@med-metrix.com":"5.224-P - MAIMONIDES MEDICAL CANCER CTR","ncalvar@med-metrix.com":"5.225-P - NEVADA HEART","agoleta@med-metrix.com":"5.225-P - NEVADA HEART","jgenriquez@med-metrix.com":"5.225-P - NEVADA HEART","msenido@med-metrix.com":"5.225-P - NEVADA HEART","ppolborido@med-metrix.com":"5.225-P - NEVADA HEART","jfranquia@med-metrix.com":"5.225-P - NEVADA HEART","rocelso@med-metrix.com":"5.225-P - NEVADA HEART","mdellota@med-metrix.com":"5.241-P - NORTHWESTERN","aballera@med-metrix.com":"5.241-P - NORTHWESTERN","rtomo@med-metrix.com":"5.241-P \u2013 NORTHWESTERN","jcorpin@med-metrix.com":"5.241-P - NORTHWESTERN","rsalazar@med-metrix.com":"5.217-P - ENGLEWOOD","bdelossantos@med-metrix.com":"5.225-P - NEVADA HEART","jurgelles@med-metrix.com":"5.225-P - NEVADA HEART","jhmagdaraog@med-metrix.com":"5.225-P - NEVADA HEART","alingad@med-metrix.com":"5.225-P - NEVADA HEART","rvillasin@med-metrix.com":"5.225-P - NEVADA HEART","lobejero@med-metrix.com":"5.251-P \u2013 HALIFAX","jumiranda@med-metrix.com":"5.251-P \u2013 HALIFAX","jelayola@med-metrix.com":"5.251-P \u2013 HALIFAX","rhipolito@med-metrix.com":"5.217-P - ENGLEWOOD","amadrigal@med-metrix.com":"5.254-P \u2013 ATHLETICO","wcebanico@med-metrix.com":"5.254-P \u2013 ATHLETICO","dladjahasan@med-metrix.com":"5.241-P - NORTHWESTERN","jacervantes@med-metrix.com":"4.010-H - BAD DEBT COLLECT","adagdag@med-metrix.com":"4.010-H - BAD DEBT COLLECT","clariosa@med-metrix.com":"1.040-C - DEV. PRODUCT STRATEGY","lacastillo@med-metrix.com":"1.040-C - DEV. PRODUCT STRATEGY","maaguas@med-metrix.com":"1.040-C - DEV. PRODUCT STRATEGY","aguerrero@med-metrix.com":"1.060-C - EXECUTIVE MGMT","ksequerra@med-metrix.com":"5.131-PS - PROVIDER ENROLLMENT","aarceta@med-metrix.com":"5.131-PS - PROVIDER ENROLLMENT","alsabillo@med-metrix.com":"5.131-PS - PROVIDER ENROLLMENT","cipaco@med-metrix.com":"5.131-PS - PROVIDER ENROLLMENT","mcvillanueva@med-metrix.com":"5.131-PS - PROVIDER ENROLLMENT","aumali@med-metrix.com":"5.131-PS - PROVIDER ENROLLMENT","jtalampas@med-metrix.com":"5.131-PS - PROVIDER ENROLLMENT","gsandoy@med-metrix.com":"5.131-PS - PROVIDER ENROLLMENT","dmaigue@med-metrix.com":"5.131-PS - PROVIDER ENROLLMENT","cmaganda@med-metrix.com":"5.131-PS - PROVIDER ENROLLMENT","igabriel@med-metrix.com":"5.131-PS - PROVIDER ENROLLMENT","cbendit@med-metrix.com":"5.131-PS - PROVIDER ENROLLMENT","crepollo@med-metrix.com":"5.131-PS - PROVIDER ENROLLMENT","jsramos@med-metrix.com":"5.131-PS - PROVIDER ENROLLMENT","bbelarmino@med-metrix.com":"5.131-PS - PROVIDER ENROLLMENT","llorezo@med-metrix.com":"5.131-PS - PROVIDER ENROLLMENT","mko@med-metrix.com":"5.131-PS - PROVIDER ENROLLMENT","jgonzales@med-metrix.com":"5.131-PS - PROVIDER ENROLLMENT","ffigueroa@med-metrix.com":"5.131-PS - PROVIDER ENROLLMENT","jreyesjr@med-metrix.com":"5.131-PS - PROVIDER ENROLLMENT","wbulao@med-metrix.com":"5.131-PS - PROVIDER ENROLLMENT","kubonto@med-metrix.com":"5.131-PS - PROVIDER ENROLLMENT","lcarpio@med-metrix.com":"5.131-PS - PROVIDER ENROLLMENT","rbsantos@med-metrix.com":"5.131-PS - PROVIDER ENROLLMENT","cjdelizo@med-metrix.com":"5.131-PS - PROVIDER ENROLLMENT","jolazo@med-metrix.com":"5.131-PS - PROVIDER ENROLLMENT","redeguzman@med-metrix.com":"5.131-PS - PROVIDER ENROLLMENT","rdsollano@med-metrix.com":"5.131-PS - PROVIDER ENROLLMENT","jmcosinero@med-metrix.com":"5.131-PS - PROVIDER ENROLLMENT","milano@med-metrix.com":"5.131-PS - PROVIDER ENROLLMENT","jfrancisco@med-metrix.com":"5.131-PS - PROVIDER ENROLLMENT","rmontoya@med-metrix.com":"5.131-PS - PROVIDER ENROLLMENT","qmariano@med-metrix.com":"5.131-PS - PROVIDER ENROLLMENT","lsalvoro@med-metrix.com":"5.131-PS - PROVIDER ENROLLMENT","lsaavedra@med-metrix.com":"5.131-PS - PROVIDER ENROLLMENT","rhermano@med-metrix.com":"5.131-PS - PROVIDER ENROLLMENT","ngenilo@med-metrix.com":"5.131-PS - PROVIDER ENROLLMENT","cadamos@med-metrix.com":"5.131-PS - PROVIDER ENROLLMENT","jmanota@med-metrix.com":"5.131-PS - PROVIDER ENROLLMENT","ayboa@med-metrix.com":"5.131-PS - PROVIDER ENROLLMENT","bquinto@med-metrix.com":"5.131-PS - PROVIDER ENROLLMENT","mglean@med-metrix.com":"5.131-PS - PROVIDER ENROLLMENT","cbdeguzman@med-metrix.com":"5.131-PS - PROVIDER ENROLLMENT","mpinlac@med-metrix.com":"5.131-PS - PROVIDER ENROLLMENT","aconsultado@med-metrix.com":"5.131-PS - PROVIDER ENROLLMENT","dsaray@med-metrix.com":"5.131-PS - PROVIDER ENROLLMENT","dbel@med-metrix.com":"5.131-PS - PROVIDER ENROLLMENT","fcelso@med-metrix.com":"5.131-PS - PROVIDER ENROLLMENT","pplacides@med-metrix.com":"5.131-PS - PROVIDER ENROLLMENT","cnamoco@med-metrix.com":"5.131-PS - PROVIDER ENROLLMENT","pesantos@med-metrix.com":"5.131-PS - PROVIDER ENROLLMENT","jpring@med-metrix.com":"5.131-PS - PROVIDER ENROLLMENT","treyes@med-metrix.com":"5.131-PS - PROVIDER ENROLLMENT","cuy@med-metrix.com":"5.131-PS - PROVIDER ENROLLMENT","mkapalungan@med-metrix.com":"5.131-PS - PROVIDER ENROLLMENT","judominguez@med-metrix.com":"5.131-PS - PROVIDER ENROLLMENT","jcawa@med-metrix.com":"5.131-PS - PROVIDER ENROLLMENT","akasilag@med-metrix.com":"5.131-PS - PROVIDER ENROLLMENT","fpona@med-metrix.com":"5.131-PS - PROVIDER ENROLLMENT","rcortez@med-metrix.com":"5.131-PS - PROVIDER ENROLLMENT","jvillacrucis@med-metrix.com":"5.131-PS - PROVIDER ENROLLMENT","ejamilla@med-metrix.com":"5.131-PS - PROVIDER ENROLLMENT","jleal@med-metrix.com":"5.131-PS - PROVIDER ENROLLMENT","abadidles@med-metrix.com":"3.470-E - OBH PB","ltabermejo@med-metrix.com":"3.470-E - OBH PB","jsanantonio@med-metrix.com":"3.470-E - OBH PB","wsolacito@med-metrix.com":"5.252-P \u2013 ALLEVIO","ranrivera@med-metrix.com":"5.252-P \u2013 ALLEVIO","aquitevis@med-metrix.com":"5.131-PS - PROVIDER ENROLLMENT","dpdeleon@med-metrix.com":"5.131-PS - PROVIDER ENROLLMENT","lmati-ong@med-metrix.com":"1.070-C - FINANCE","karabit@med-metrix.com":"1.070-C - FINANCE","regonzales@med-metrix.com":"1.050-C - DEV. PROGRAMMING","egsantos@med-metrix.com":"1.050-C - DEV. PROGRAMMING","hicabales@med-metrix.com":"1.050-C - DEV. PROGRAMMING","rbernas@med-metrix.com":"1.050-C - DEV. PROGRAMMING","cmarino@med-metrix.com":"5.010-PS - MANAGEMENT","agajo@med-metrix.com":"1.140-C - TRAINING & PROCESS IMPROVEMENT","sestomata@med-metrix.com":"1.140-C - TRAINING & PROCESS IMPROVEMENT","dmelgarejo@med-metrix.com":"1.140-C - TRAINING & PROCESS IMPROVEMENT","csoliman@med-metrix.com":"1.140-C - TRAINING & PROCESS IMPROVEMENT","carepollo@med-metrix.com":"1.140-C - TRAINING & PROCESS IMPROVEMENT","epablo@med-metrix.com":"1.140-C - TRAINING & PROCESS IMPROVEMENT","smanarang@med-metrix.com":"1.140-C - TRAINING & PROCESS IMPROVEMENT","mfetilo@med-metrix.com":"1.140-C - TRAINING & PROCESS IMPROVEMENT","liarcangel@med-metrix.com":"1.140-C - TRAINING & PROCESS IMPROVEMENT","pcubacub@med-metrix.com":"1.140-C - TRAINING & PROCESS IMPROVEMENT","kbarola@med-metrix.com":"1.140-C - TRAINING & PROCESS IMPROVEMENT","sbagadiong@med-metrix.com":"1.140-C - TRAINING & PROCESS IMPROVEMENT","nararacap@med-metrix.com":"1.140-C - TRAINING & PROCESS IMPROVEMENT","zbalberan@med-metrix.com":"1.140-C - TRAINING & PROCESS IMPROVEMENT","dbato@med-metrix.com":"1.140-C - TRAINING & PROCESS IMPROVEMENT","mpantoja@med-metrix.com":"1.140-C - TRAINING & PROCESS IMPROVEMENT","cpedragoza@med-metrix.com":"5.010-PS - MANAGEMENT","mreyman@med-metrix.com":"1.140-C - TRAINING & PROCESS IMPROVEMENT","cajido@med-metrix.com":"1.140-C - TRAINING & PROCESS IMPROVEMENT","hmacaraniag@med-metrix.com":"1.140-C - TRAINING & PROCESS IMPROVEMENT","morang@med-metrix.com":"4.230-H - ARS MGMT (DIR+OA)","rpineda@med-metrix.com":"4.230-H - ARS MGMT (DIR+OA)","gnunez@med-metrix.com":"4.230-H - ARS MGMT (DIR+OA)","zmoral@med-metrix.com":"4.230-H - ARS MGMT (DIR+OA)","ghabito@med-metrix.com":"4.230-H - ARS MGMT (DIR+OA)","mdejesus@med-metrix.com":"4.230-H - ARS MGMT (DIR+OA)","acomilan@med-metrix.com":"4.230-H - ARS MGMT (DIR+OA)","jbarroga@med-metrix.com":"4.230-H - ARS MGMT (DIR+OA)","latendido@med-metrix.com":"4.230-H - ARS MGMT (DIR+OA)","karroyo@med-metrix.com":"4.230-H - ARS MGMT (DIR+OA)","mmiramonte@med-metrix.com":"4.060-H - FORENSIC/HIM","sbernados@med-metrix.com":"4.060-H - FORENSIC/HIM","fabellar@med-metrix.com":"5.010-PS - MANAGEMENT","ual-shamier@med-metrix.com":"4.060-H - FORENSIC/HIM","lmalaque@med-metrix.com":"4.060-H - FORENSIC/HIM","ktapel@med-metrix.com":"4.230-H - ARS MGMT (DIR+OA)","mfamero@med-metrix.com":"4.060-H - FORENSIC/HIM","rdahan@med-metrix.com":"4.060-H - FORENSIC/HIM","rgo@med-metrix.com":"1.140-C - TRAINING & PROCESS IMPROVEMENT","epiad@med-metrix.com":"5.010-PS - MANAGEMENT","mreabal@med-metrix.com":"3.100-E - BROOKLYN","jumbuk@med-metrix.com":"3.320-E - VHC PB","kmtan@med-metrix.com":"5.010-PS - MANAGEMENT","jsambilay@med-metrix.com":"5.010-PS - MANAGEMENT","esalandanan@med-metrix.com":"5.010-PS - MANAGEMENT","mreynera@med-metrix.com":"5.010-PS - MANAGEMENT","fmaun@med-metrix.com":"5.010-PS - MANAGEMENT","mlopez@med-metrix.com":"5.010-PS - MANAGEMENT","jbarrios@med-metrix.com":"5.010-PS - MANAGEMENT","haplicador@med-metrix.com":"5.010-PS - MANAGEMENT","rtoledana@med-metrix.com":"5.010-PS - MANAGEMENT","ebautista@med-metrix.com":"5.010-PS - MANAGEMENT","oadrias@med-metrix.com":"5.010-PS - MANAGEMENT","jmorada@med-metrix.com":"5.010-PS - MANAGEMENT","mgrejarte@med-metrix.com":"5.010-PS - MANAGEMENT","rignacio@med-metrix.com":"5.010-PS - MANAGEMENT","recranum@med-metrix.com":"5.010-PS - MANAGEMENT","dcairo@med-metrix.com":"5.010-PS - MANAGEMENT","ramogues@med-metrix.com":"5.010-PS - MANAGEMENT","mscruz@med-metrix.com":"5.010-PS - MANAGEMENT","jborja@med-metrix.com":"5.010-PS - MANAGEMENT","jcortes@med-metrix.com":"5.010-PS - MANAGEMENT","mvillalon@med-metrix.com":"5.010-PS - MANAGEMENT","tcabuena@med-metrix.com":"5.010-PS - MANAGEMENT","cmacawili@med-metrix.com":"5.010-PS - MANAGEMENT","eramo@med-metrix.com":"5.010-PS - MANAGEMENT","rsarcita@med-metrix.com":"5.010-PS - MANAGEMENT","mgulles@med-metrix.com":"1.140-C - TRAINING & PROCESS IMPROVEMENT","joosorio@med-metrix.com":"3.100-E - BROOKLYN","emagayones@med-metrix.com":"1.140-C - TRAINING & PROCESS IMPROVEMENT","msevilla@med-metrix.com":"5.010-PS - MANAGEMENT","aaujero@med-metrix.com":"5.010-PS - MANAGEMENT","lricamara@med-metrix.com":"1.140-C - TRAINING & PROCESS IMPROVEMENT","hplatil@med-metrix.com":"5.010-PS - MANAGEMENT","ccondolor@med-metrix.com":"4.020-H - COMPLEX CLAIMS","asombrero@med-metrix.com":"4.020-H - COMPLEX CLAIMS","amalubay@med-metrix.com":"4.230-H - ARS MGMT (DIR+OA)","gpitalco@med-metrix.com":"4.4101-H - SELF PAY HBCS","jdasico@med-metrix.com":"4.4101-H - SELF PAY HBCS","actorres@med-metrix.com":"3.100-E - BROOKLYN","gquintero@med-metrix.com":"4.4101-H - SELF PAY HBCS","hfornal@med-metrix.com":"5.010-PS - MANAGEMENT","edpadilla@med-metrix.com":"5.010-PS - MANAGEMENT","gjulao@med-metrix.com":"5.131-PS - PROVIDER ENROLLMENT","zcuenco@med-metrix.com":"5.131-PS - PROVIDER ENROLLMENT","dreyes@med-metrix.com":"3.450-E - OBH HB","ggayas@med-metrix.com":"3.430-E - OBH CONTACT CENTER","nimutan@med-metrix.com":"3.470-E - OBH PB","kbalbin@med-metrix.com":"4.040-H - CODING","jgaerlan@med-metrix.com":"4.230-H - ARS MGMT (DIR+OA)","kjavier@med-metrix.com":"1.140-C - TRAINING & PROCESS IMPROVEMENT","jevidal@med-metrix.com":"5.010-PS - MANAGEMENT","dcambronero@med-metrix.com":"4.4101-H - SELF PAY HBCS","jgutierrez@med-metrix.com":"4.4101-H - SELF PAY HBCS","jasuncion@med-metrix.com":"5.253-P - CHRISTIANA CARE","jwasan@med-metrix.com":"4.230-H - ARS MGMT (DIR+OA)","gherradura@med-metrix.com":"4.040-H - CODING","ajnarvaez@med-metrix.com":"4.040-H - CODING","jcarpio@med-metrix.com":"3.310-E - VHC HB","nchavez@med-metrix.com":"3.310-E - VHC HB","vdiacan@med-metrix.com":"3.310-E - VHC HB","lduro@med-metrix.com":"3.310-E - VHC HB","mspena@med-metrix.com":"3.310-E - VHC HB","ybautista@med-metrix.com":"4.040-H - CODING","jcadornigara@med-metrix.com":"4.040-H - CODING","acaniezo@med-metrix.com":"4.040-H - CODING","ifano@med-metrix.com":"4.040-H - CODING","mamalit@med-metrix.com":"4.040-H - CODING","izurbano@med-metrix.com":"4.040-H - CODING","gbarredo@med-metrix.com":"3.450-E - OBH HB","geaquino@med-metrix.com":"4.060-H - FORENSIC/HIM","mdmedina@med-metrix.com":"1.080-C - HUMAN RESOURCES","ecdelossantos@med-metrix.com":"1.080-C - HUMAN RESOURCES","jnael@med-metrix.com":"1.080-C - HUMAN RESOURCES","barivera@med-metrix.com":"1.080-C - HUMAN RESOURCES","jtco@med-metrix.com":"1.080-C - HUMAN RESOURCES","bnamli@med-metrix.com":"5.221-P - HMH","vdusal@med-metrix.com":"3.470-E - OBH PB","vhutalla@med-metrix.com":"3.470-E - OBH PB","jnoble@med-metrix.com":"3.470-E - OBH PB","mabrahan@med-metrix.com":"3.470-E - OBH PB","bgrajera@med-metrix.com":"3.470-E - OBH PB","jmano@med-metrix.com":"3.470-E - OBH PB","jsalazar@med-metrix.com":"5.241-P - NORTHWESTERN","cbulalaque@med-metrix.com":"5.241-P - NORTHWESTERN","isarabia@med-metrix.com":"5.241-P - NORTHWESTERN","esanantonio@med-metrix.com":"5.241-P - NORTHWESTERN","psanota@med-metrix.com":"1.060-C - EXECUTIVE MGMT","dmonakil@med-metrix.com":"1.060-C - EXECUTIVE MGMT","recapule@med-metrix.com":"1.060-C - EXECUTIVE MGMT","ckdeleon@med-metrix.com":"1.090-C - PROJECT MGMT","jomogar@med-metrix.com":"4.060-H - FORENSIC/HIM","mvillanueva@med-metrix.com":"4.060-H - FORENSIC/HIM","stutanes@med-metrix.com":"4.060-H - FORENSIC/HIM","aromero@med-metrix.com":"4.060-H - FORENSIC/HIM","jperinia@med-metrix.com":"4.060-H - FORENSIC/HIM","mperez@med-metrix.com":"4.060-H - FORENSIC/HIM","jpena@med-metrix.com":"4.060-H - FORENSIC/HIM","jpecardal@med-metrix.com":"4.060-H - FORENSIC/HIM","joriel@med-metrix.com":"4.060-H - FORENSIC/HIM","xnacua@med-metrix.com":"4.060-H - FORENSIC/HIM","jmicabalo@med-metrix.com":"4.060-H - FORENSIC/HIM","hmendoza@med-metrix.com":"4.060-H - FORENSIC/HIM","jdflores@med-metrix.com":"4.060-H - FORENSIC/HIM","wenderez@med-metrix.com":"4.060-H - FORENSIC/HIM","jdacio@med-metrix.com":"4.060-H - FORENSIC/HIM","jmcruz@med-metrix.com":"4.060-H - FORENSIC/HIM","fcruz@med-metrix.com":"4.060-H - FORENSIC/HIM","fcastelo@med-metrix.com":"4.060-H - FORENSIC/HIM","mcastaneda@med-metrix.com":"4.060-H - FORENSIC/HIM","mbalanay@med-metrix.com":"4.060-H - FORENSIC/HIM","aamalingan@med-metrix.com":"4.060-H - FORENSIC/HIM","smarasigan@med-metrix.com":"4.060-H - FORENSIC/HIM","erapote@med-metrix.com":"1.120-C - TECH SUPPORT & INFRASTRUCTURE","rgabiosa@med-metrix.com":"1.120-C - TECH SUPPORT & INFRASTRUCTURE","fcantor@med-metrix.com":"1.120-C - TECH SUPPORT & INFRASTRUCTURE","eamurao@med-metrix.com":"1.120-C - TECH SUPPORT & INFRASTRUCTURE","pdelacruz@med-metrix.com":"1.100-C - RPA & AUTOMATION","declipse@med-metrix.com":"1.100-C - RPA & AUTOMATION","knale@med-metrix.com":"1.010-C - ANALYTICS","jalmojuela@med-metrix.com":"1.030-C - DATA MGMT","bumacam@med-metrix.com":"1.120-C - TECH SUPPORT & INFRASTRUCTURE","jbacani@med-metrix.com":"1.120-C - TECH SUPPORT & INFRASTRUCTURE","pebron@med-metrix.com":"1.120-C - TECH SUPPORT & INFRASTRUCTURE","jabajay@med-metrix.com":"1.120-C - TECH SUPPORT & INFRASTRUCTURE","agalbo@med-metrix.com":"1.070-C - FINANCE","pcatangay@med-metrix.com":"1.120-C - TECH SUPPORT & INFRASTRUCTURE","ramoyan@med-metrix.com":"1.120-C - TECH SUPPORT & INFRASTRUCTURE","dnantes@med-metrix.com":"1.080-C - HUMAN RESOURCES","mbolina@med-metrix.com":"1.080-C - HUMAN RESOURCES","kmalapad@med-metrix.com":"1.080-C - HUMAN RESOURCES","jcua@med-metrix.com":"1.120-C - TECH SUPPORT & INFRASTRUCTURE","jcatipon@med-metrix.com":"5.010-PS - MANAGEMENT","rlim@med-metrix.com":"4.240-H - ARS MANAGER","asdelacruz@med-metrix.com":"5.221-P - HMH","rmaganda@med-metrix.com":"4.060-H - FORENSIC/HIM","mrios@med-metrix.com":"1.060-C - EXECUTIVE MGMT","cjimenez@med-metrix.com":"1.060-C - EXECUTIVE MGMT","maespiritu@med-metrix.com":"1.140-C - TRAINING & PROCESS IMPROVEMENT","magda@med-metrix.com":"1.140-C - TRAINING & PROCESS IMPROVEMENT","kdolorfino@med-metrix.com":"1.140-C - TRAINING & PROCESS IMPROVEMENT","klopez@med-metrix.com":"1.060-C - EXECUTIVE MGMT","paebron@med-metrix.com":"1.050-C - DEV. PROGRAMMING","klagang@med-metrix.com":"1.050-C - DEV. PROGRAMMING","gsebastian@med-metrix.com":"1.050-C - DEV. PROGRAMMING","svillaflor@med-metrix.com":"1.050-C - DEV. PROGRAMMING","jrmendoza@med-metrix.com":"1.050-C - DEV. PROGRAMMING","amagpantay@med-metrix.com":"1.050-C - DEV. PROGRAMMING","jsabio@med-metrix.com":"1.050-C - DEV. PROGRAMMING","eangeles@med-metrix.com":"1.050-C - DEV. PROGRAMMING","rgutierrez@med-metrix.com":"1.050-C - DEV. PROGRAMMING","mpnavarro@med-metrix.com":"1.050-C - DEV. PROGRAMMING","rbmatias@med-metrix.com":"1.120-C - TECH SUPPORT & INFRASTRUCTURE","rmagsuci@med-metrix.com":"1.030-C - DATA MGMT","rballesteros@med-metrix.com":"1.030-C - DATA MGMT","fellado@med-metrix.com":"1.140-C - TRAINING & PROCESS IMPROVEMENT","jbermas@med-metrix.com":"1.140-C - TRAINING & PROCESS IMPROVEMENT","cchong@med-metrix.com":"1.080-C - HUMAN RESOURCES","pferma@med-metrix.com":"1.080-C - HUMAN RESOURCES","elandicho@med-metrix.com":"1.030-C - DATA MGMT","pcabrera@med-metrix.com":"1.030-C - DATA MGMT","mpernia@med-metrix.com":"1.030-C - DATA MGMT","bdmartin@med-metrix.com":"1.030-C - DATA MGMT","rarbois@med-metrix.com":"1.030-C - DATA MGMT","jpuhawan@med-metrix.com":"1.030-C - DATA MGMT","jibana@med-metrix.com":"1.030-C - DATA MGMT","rsdelacruz@med-metrix.com":"1.030-C - DATA MGMT","gbuenavides@med-metrix.com":"4.060-H - FORENSIC/HIM","cdacuno@med-metrix.com":"1.140-C - TRAINING & PROCESS IMPROVEMENT","alpadilla@med-metrix.com":"3.100-E - BROOKLYN","fmallannao@med-metrix.com":"3.100-E - BROOKLYN","jdamole@med-metrix.com":"4.250-H - ARS SUPERVISOR","cllaneta@med-metrix.com":"4.031-H - DENIALS MANAGEMENT","rsapongay@med-metrix.com":"4.250-H - ARS SUPERVISOR","jbernardo@med-metrix.com":"4.250-H - ARS SUPERVISOR","mlomarquez@med-metrix.com":"4.250-H - ARS SUPERVISOR","csalon@med-metrix.com":"4.250-H - ARS SUPERVISOR","mmaniquez@med-metrix.com":"4.250-H - ARS SUPERVISOR","jlazada@med-metrix.com":"4.250-H - ARS SUPERVISOR","mdelgado@med-metrix.com":"4.250-H - ARS SUPERVISOR","mgutierrez@med-metrix.com":"4.250-H - ARS SUPERVISOR","klcruzado@med-metrix.com":"4.250-H - ARS SUPERVISOR","srosales@med-metrix.com":"4.031-H - DENIALS MANAGEMENT","jbelgica@med-metrix.com":"4.031-H - DENIALS MANAGEMENT","ealicante@med-metrix.com":"4.031-H - DENIALS MANAGEMENT","jfidelino@med-metrix.com":"4.4101-H - SELF PAY HBCS","epulgado@med-metrix.com":"4.4101-H - SELF PAY HBCS","mtolentino@med-metrix.com":"4.060-H - FORENSIC/HIM","mcuevo@med-metrix.com":"4.060-H - FORENSIC/HIM","cborres@med-metrix.com":"4.060-H - FORENSIC/HIM","aisais@med-metrix.com":"4.060-H - FORENSIC/HIM","magcaoili@med-metrix.com":"4.060-H - FORENSIC/HIM","jejimenez@med-metrix.com":"4.060-H - FORENSIC/HIM","avalila@med-metrix.com":"4.060-H - FORENSIC/HIM","dsajo@med-metrix.com":"4.060-H - FORENSIC/HIM","mbello@med-metrix.com":"4.060-H - FORENSIC/HIM","jvolante@med-metrix.com":"5.221-P - HMH","jofrancisco@med-metrix.com":"5.211-P - APG","rtabaranza@med-metrix.com":"5.212-P - ASTERA","jcampo@med-metrix.com":"5.220-P - HMCA","dherrera@med-metrix.com":"5.221-P - HMH","wbana@med-metrix.com":"5.221-P - HMH","jcarilla@med-metrix.com":"5.222-P - HOLYOKE","ragacid@med-metrix.com":"5.227-P - ST JOE","jtanawit@med-metrix.com":"3.320-E - VHC PB","jmelad@med-metrix.com":"4.4102-H - SELF PAY HBCS","gdestur@med-metrix.com":"5.010-PS - MANAGEMENT","itestimio@med-metrix.com":"4.020-H - COMPLEX CLAIMS","jcapuz@med-metrix.com":"4.060-H - FORENSIC/HIM","jbrusola@med-metrix.com":"4.250-H - ARS SUPERVISOR","aresurreccion@med-metrix.com":"4.060-H - FORENSIC/HIM","mnavarro@med-metrix.com":"4.031-H - DENIALS MANAGEMENT","aalconera@med-metrix.com":"4.031-H - DENIALS MANAGEMENT","rmacabenta@med-metrix.com":"3.450-E - OBH HB","mhumirang@med-metrix.com":"3.450-E - OBH HB","jmanalaysay@med-metrix.com":"4.250-H - ARS SUPERVISOR","nrementilla@med-metrix.com":"4.250-H - ARS SUPERVISOR","jespecial@med-metrix.com":"4.020-H - COMPLEX CLAIMS","rmunoz@med-metrix.com":"4.020-H - COMPLEX CLAIMS","josantiago@med-metrix.com":"5.233-P - AKUMIN","emarquez@med-metrix.com":"5.253-P - CHRISTIANA CARE","slumactod@med-metrix.com":"4.250-H - ARS SUPERVISOR","rmorilla@med-metrix.com":"5.225-P - NEVADA HEART","lguerta@med-metrix.com":"4.060-H - FORENSIC/HIM","ebumanlag@med-metrix.com":"4.060-H - FORENSIC/HIM","ccatugas@med-metrix.com":"4.060-H - FORENSIC/HIM","rcolina@med-metrix.com":"4.060-H - FORENSIC/HIM","scunanan@med-metrix.com":"4.060-H - FORENSIC/HIM","gtrapero@med-metrix.com":"5.251-P \u2013 HALIFAX","jabayan@med-metrix.com":"5.120-PS - CASH POST","cpenaverde@med-metrix.com":"5.120-PS - CASH POST","cbariso@med-metrix.com":"5.120-PS - CASH POST","gmedina@med-metrix.com":"5.120-PS - CASH POST","kaquitania@med-metrix.com":"4.060-H - FORENSIC/HIM","jsultan@med-metrix.com":"5.130-PS - CODING","lmolina@med-metrix.com":"5.130-PS - CODING","kcascon@med-metrix.com":"5.130-PS - CODING","dmutuc@med-metrix.com":"4.060-H - FORENSIC/HIM","gmartinez@med-metrix.com":"4.060-H - FORENSIC/HIM","aerrevere@med-metrix.com":"4.060-H - FORENSIC/HIM","adacpano@med-metrix.com":"4.060-H - FORENSIC/HIM","asibonga@med-metrix.com":"4.060-H - FORENSIC/HIM","eenciso@med-metrix.com":"4.060-H - FORENSIC/HIM","jbacatan@med-metrix.com":"4.060-H - FORENSIC/HIM","jtimbol@med-metrix.com":"4.060-H - FORENSIC/HIM","jdumaquita@med-metrix.com":"4.060-H - FORENSIC/HIM","msanangel@med-metrix.com":"4.040-H - CODING","dmendez@med-metrix.com":"4.060-H - FORENSIC/HIM","zperez@med-metrix.com":"1.080-C - HUMAN RESOURCES","malben@med-metrix.com":"4.060-H - FORENSIC/HIM","mmacadangdang@med-metrix.com":"1.140-C - TRAINING & PROCESS IMPROVEMENT","knapa@med-metrix.com":"1.140-C - TRAINING & PROCESS IMPROVEMENT","vpahati@med-metrix.com":"3.200-E - CROZER","ranoba@med-metrix.com":"4.4101-H - SELF PAY HBCS","jrenacia@med-metrix.com":"5.225-P - NEVADA HEART","hpellazar@med-metrix.com":"5.240-P - CONFLUENCE HEALTH","rpanal@med-metrix.com":"5.010-PS - MANAGEMENT","jenriquez@med-metrix.com":"5.221-P - HMH","eallano@med-metrix.com":"5.221-P - HMH","lmagpayo@med-metrix.com":"5.225-P - NEVADA HEART","mcorpin@med-metrix.com":"5.224-P - MAIMONIDES MEDICAL CANCER CTR","jeliserio@med-metrix.com":"5.131-PS - PROVIDER ENROLLMENT","kfrancisco@med-metrix.com":"5.131-PS - PROVIDER ENROLLMENT","ebarretto@med-metrix.com":"5.131-PS - PROVIDER ENROLLMENT","felicanal@med-metrix.com":"5.131-PS - PROVIDER ENROLLMENT","gduitiz@med-metrix.com":"5.131-PS - PROVIDER ENROLLMENT","mkcampos@med-metrix.com":"1.140-C - TRAINING & PROCESS IMPROVEMENT","cjarque@med-metrix.com":"1.140-C - TRAINING & PROCESS IMPROVEMENT","khernandez@med-metrix.com":"1.140-C - TRAINING & PROCESS IMPROVEMENT","abuan@med-metrix.com":"1.140-C - TRAINING & PROCESS IMPROVEMENT","iquirante@med-metrix.com":"1.140-C - TRAINING & PROCESS IMPROVEMENT","hmasangkay@med-metrix.com":"1.140-C - TRAINING & PROCESS IMPROVEMENT","jesplana@med-metrix.com":"1.140-C - TRAINING & PROCESS IMPROVEMENT","ksabillo@med-metrix.com":"1.140-C - TRAINING & PROCESS IMPROVEMENT","msagun@med-metrix.com":"1.140-C - TRAINING & PROCESS IMPROVEMENT","jugarte@med-metrix.com":"4.4102-H - SELF PAY HBCS","jufigueroa@med-metrix.com":"4.4102-H - SELF PAY HBCS","mggutierrez@med-metrix.com":"4.4102-H - SELF PAY HBCS","dfalguera@med-metrix.com":"4.4102-H - SELF PAY HBCS","asarimanok@med-metrix.com":"4.4102-H - SELF PAY HBCS","tsarsosa@med-metrix.com":"4.4102-H - SELF PAY HBCS","ncabang@med-metrix.com":"1.060-C - EXECUTIVE MGMT","marimado@med-metrix.com":"1.060-C - EXECUTIVE MGMT","zpineda@med-metrix.com":"5.140-PS - SYSTEMS","mgalvez@med-metrix.com":"1.080-C - HUMAN RESOURCES","cdebelen@med-metrix.com":"1.070-C - FINANCE","msarte@med-metrix.com":"1.080-C - HUMAN RESOURCES","rraperoga@med-metrix.com":"1.080-C - HUMAN RESOURCES","jpria@med-metrix.com":"1.080-C - HUMAN RESOURCES","amacasinag@med-metrix.com":"1.080-C - HUMAN RESOURCES","aaberin@med-metrix.com":"1.080-C - HUMAN RESOURCES","agiangan@med-metrix.com":"1.030-C - DATA MGMT","jmatutina@med-metrix.com":"1.050-C - DEV. PROGRAMMING","ctalusig@med-metrix.com":"1.030-C - DATA MGMT","jnarciso@med-metrix.com":"1.030-C - DATA MGMT","bventigan@med-metrix.com":"1.120-C - TECH SUPPORT & INFRASTRUCTURE","jbuenvenida@med-metrix.com":"1.120-C - TECH SUPPORT & INFRASTRUCTURE","bmallari@med-metrix.com":"1.140-C - TRAINING & PROCESS IMPROVEMENT","cdbacalzo@med-metrix.com":"1.140-C - TRAINING & PROCESS IMPROVEMENT","nrodriguez@med-metrix.com":"1.140-C - TRAINING & PROCESS IMPROVEMENT","jdiaz@med-metrix.com":"1.140-C - TRAINING & PROCESS IMPROVEMENT","josantos@med-metrix.com":"1.140-C - TRAINING & PROCESS IMPROVEMENT","ssarmiento@med-metrix.com":"1.140-C - TRAINING & PROCESS IMPROVEMENT","jasai@med-metrix.com":"1.140-C - TRAINING & PROCESS IMPROVEMENT","ccomon@med-metrix.com":"1.140-C - TRAINING & PROCESS IMPROVEMENT","menriquez@med-metrix.com":"1.140-C - TRAINING & PROCESS IMPROVEMENT","jisalazar@med-metrix.com":"1.140-C - TRAINING & PROCESS IMPROVEMENT","rmagpantay@med-metrix.com":"1.140-C - TRAINING & PROCESS IMPROVEMENT","dgaitano@med-metrix.com":"1.140-C - TRAINING & PROCESS IMPROVEMENT","mpmercado@med-metrix.com":"1.140-C - TRAINING & PROCESS IMPROVEMENT","lsanciangco@med-metrix.com":"1.140-C - TRAINING & PROCESS IMPROVEMENT","aortaliza@med-metrix.com":"1.140-C - TRAINING & PROCESS IMPROVEMENT","jmiraflor@med-metrix.com":"1.140-C - TRAINING & PROCESS IMPROVEMENT","jdeguzman@med-metrix.com":"1.140-C - TRAINING & PROCESS IMPROVEMENT","ccruz@med-metrix.com":"1.140-C - TRAINING & PROCESS IMPROVEMENT","jarcon@med-metrix.com":"1.140-C - TRAINING & PROCESS IMPROVEMENT","mjbana@med-metrix.com":"1.140-C - TRAINING & PROCESS IMPROVEMENT","cbmenrige@med-metrix.com":"1.140-C - TRAINING & PROCESS IMPROVEMENT","jbermudo@med-metrix.com":"1.140-C - TRAINING & PROCESS IMPROVEMENT","afuentes@med-metrix.com":"1.140-C - TRAINING & PROCESS IMPROVEMENT","jolivo@med-metrix.com":"4.060-H - FORENSIC/HIM","ammendoza@med-metrix.com":"4.060-H - FORENSIC/HIM","jgabitano@med-metrix.com":"4.060-H - FORENSIC/HIM","acornelio@med-metrix.com":"4.060-H - FORENSIC/HIM","mfragata@med-metrix.com":"4.060-H - FORENSIC/HIM","lquilbio@med-metrix.com":"4.060-H - FORENSIC/HIM","nacuzar@med-metrix.com":"4.060-H - FORENSIC/HIM","mcaballero@med-metrix.com":"4.060-H - FORENSIC/HIM","sifrancisco@med-metrix.com":"4.060-H - FORENSIC/HIM","khawkins@med-metrix.com":"4.060-H - FORENSIC/HIM","mcostales@med-metrix.com":"4.060-H - FORENSIC/HIM","manchos@med-metrix.com":"4.060-H - FORENSIC/HIM","jampioco@med-metrix.com":"4.060-H - FORENSIC/HIM","mroy@med-metrix.com":"4.060-H - FORENSIC/HIM","jescalo@med-metrix.com":"4.060-H - FORENSIC/HIM","ransag@med-metrix.com":"4.060-H - FORENSIC/HIM","cadeguzman@med-metrix.com":"4.060-H - FORENSIC/HIM","rbenavidez@med-metrix.com":"4.060-H - FORENSIC/HIM","clagman@med-metrix.com":"4.060-H - FORENSIC/HIM","aalonzosana@med-metrix.com":"4.060-H - FORENSIC/HIM","moira@med-metrix.com":"5.010-PS - MANAGEMENT","elibre@med-metrix.com":"1.060-C - EXECUTIVE MGMT","cpangilinan@med-metrix.com":"1.060-C - EXECUTIVE MGMT","jpe@med-metrix.com":"1.060-C - EXECUTIVE MGMT"};
+
+
+var ROLE_LABELS = { system_admin:'System Admin', manager:'Manager', supervisor:'Supervisor', employee:'Employee' };
+var ROLE_DESC   = {
+  system_admin: 'Full control: manage all users, view all submissions, reset passwords, delete accounts.',
+  manager:      'View and approve/reject submissions from supervisors and employees reporting to them. Can export reports.',
+  supervisor:   'View and approve/reject submissions from employees reporting to them. Can export reports.',
+  employee:     'Can only submit attendance notifications.'
+};
+
+function defaultDB() {
+  return {
+    _version: DATA_VERSION,
+    users: [
+      { id:1, employee_id:'ADMIN001', full_name:'System Admin', email:'admin@mmx.com',  department:'IT',         role:'system_admin', password:'Admin@1234', is_active:true, reports_to:null },
+      { id:2, employee_id:'MGR001',   full_name:'John Manager', email:'john@mmx.com',   department:'Operations', role:'manager',      password:'pass123',    is_active:true, reports_to:1    },
+      { id:3, employee_id:'SUP001',   full_name:'Maria Supervisor', email:'maria@mmx.com', department:'Operations', role:'supervisor', password:'pass123',    is_active:true, reports_to:2    },
+      { id:4, employee_id:'EMP001',   full_name:'Alice Johnson',email:'alice@mmx.com',  department:'Operations', role:'employee',     password:'pass123',    is_active:true, reports_to:3    },
+      { id:5, employee_id:'EMP002',   full_name:'Bob Santos',   email:'bob@mmx.com',    department:'Finance',    role:'employee',     password:'pass123',    is_active:true, reports_to:3    }
+    ],
+    submissions: [],
+    nextSid: 1,
+    nextUid: 6
+  };
+}
+
+function loadDB() {
+  try {
+    var stored = localStorage.getItem(STORE_KEY);
+    if (stored) {
+      var parsed = JSON.parse(stored);
+      if (parsed && parsed._version === DATA_VERSION) { return parsed; }
+      // wipe all old keys
+      ['mmx_attendance','mmx_attendance_v1','mmx_attendance_v2'].forEach(function(k){ localStorage.removeItem(k); });
+    }
+  } catch(e) { localStorage.removeItem(STORE_KEY); }
+  return defaultDB();
+}
+
+function saveDB() {
+  DB._version = DATA_VERSION;
+  try { localStorage.setItem(STORE_KEY, JSON.stringify(DB)); } catch(e) {}
+}
+
+var DB = loadDB();
+
+// ============================================================
+// HIERARCHY HELPERS
+// ============================================================
+// Get all user IDs that report (directly or transitively) to a given user
+function getSubordinateIds(userId) {
+  var result = [];
+  var queue = [userId];
+  while (queue.length) {
+    var pid = queue.shift();
+    for (var i = 0; i < DB.users.length; i++) {
+      if (DB.users[i].reports_to === pid && DB.users[i].id !== userId) {
+        if (result.indexOf(DB.users[i].id) === -1) {
+          result.push(DB.users[i].id);
+          queue.push(DB.users[i].id);
+        }
+      }
+    }
+  }
+  return result;
+}
+
+// What submissions can this user see?
+function getVisibleSubmissions() {
+  if (!currentUser) { return []; }
+  var role = currentUser.role;
+  var subs = DB.submissions;
+  if (role === 'system_admin') { return subs.slice(); }
+  // manager and supervisor: see submissions from subordinates only
+  var subIds = getSubordinateIds(currentUser.id);
+  var result = [];
+  for (var i = 0; i < subs.length; i++) {
+    if (subIds.indexOf(subs[i].user_id) !== -1) { result.push(subs[i]); }
+  }
+  return result;
+}
+
+// ============================================================
+// TIME HELPERS
+// ============================================================
+function localToday() {
+  var d = new Date();
+  return d.getFullYear() + '-' + pad(d.getMonth()+1) + '-' + pad(d.getDate());
+}
+function localNow() {
+  var d = new Date();
+  return d.getFullYear() + '-' + pad(d.getMonth()+1) + '-' + pad(d.getDate()) + ' ' + pad(d.getHours()) + ':' + pad(d.getMinutes());
+}
+function pad(n) { return n < 10 ? '0'+n : ''+n; }
+
+// ============================================================
+// SESSION
+// ============================================================
+var currentUser = null;
+var selectedType = null;
+var reviewId = null;
+var resetPwUserId = null;
+var deleteUserId = null;
+var kpiActive = 'all';
+
+// ============================================================
+// AUTH
+// ============================================================
+function doLogin(e) {
+  e.preventDefault();
+  var eid = document.getElementById('loginId').value.trim();
+  var pw  = document.getElementById('loginPw').value;
+  var u = null;
+  var eidLower = eid.toLowerCase();
+  for (var i = 0; i < DB.users.length; i++) {
+    if (DB.users[i].employee_id.toLowerCase() === eidLower && DB.users[i].is_active && DB.users[i].password === pw) { u = DB.users[i]; break; }
+  }
+  if (!u) {
+    document.getElementById('loginErr').innerHTML = '<div class="al ae">Invalid employee ID or password.</div>';
+    return;
+  }
+  currentUser = u;
+  document.getElementById('loginErr').innerHTML = '';
+  routeUser();
+}
+
+function routeUser() {
+  var role = currentUser.role;
+  if (role === 'employee') {
+    showEmployee();
+  } else if (role === 'system_admin' || role === 'manager' || role === 'supervisor') {
+    showDashboard();
+  } else {
+    showEmployee();
+  }
+}
+
+function doLogout() {
+  currentUser = null; selectedType = null; kpiActive = 'all';
+  showView('viewLogin');
+}
+
+// ============================================================
+// VIEWS
+// ============================================================
+function showView(id) {
+  var views = ['viewLogin','viewEmployee','viewDashboard'];
+  for (var i = 0; i < views.length; i++) { document.getElementById(views[i]).style.display = 'none'; }
+  document.getElementById(id).style.display = 'block';
+}
+
+function showEmployee() {
+  showView('viewEmployee');
+  document.getElementById('empNavName').textContent = currentUser.full_name;
+  document.getElementById('subDate').value = localToday();
+  document.getElementById('subDept').value = currentUser.department;
+  document.getElementById('etGroup').style.display = 'none';
+  selectedType = null;
+  ['late','absent','emergency'].forEach(function(t){ document.getElementById('tc-'+t).className='type-card'; });
+  renderHistory();
+}
+
+function showDashboard() {
+  showView('viewDashboard');
+  var role = currentUser.role;
+  document.getElementById('dashNavName').textContent = currentUser.full_name;
+  document.getElementById('dashNavRole').textContent = ROLE_LABELS[role] || role;
+  document.getElementById('dashNavRole').className = 'nav-role nr-' + role;
+  document.getElementById('dashTitle').textContent = ROLE_LABELS[role] + ' Dashboard';
+  // Show Users tab only for system_admin
+  document.getElementById('navBtnSubs').style.display = 'inline-flex';
+  document.getElementById('navBtnUsers').style.display = role === 'system_admin' ? 'inline-flex' : 'none';
+  document.getElementById('btnClearData').style.display = role === 'system_admin' ? 'inline-flex' : 'none';
+  // Scope note
+  var note = '';
+  if (role === 'system_admin') { note = 'Showing all submissions across the organisation.'; }
+  else if (role === 'manager') { note = 'Showing submissions from supervisors and employees in your team.'; }
+  else if (role === 'supervisor') { note = 'Showing submissions from employees reporting to you.'; }
+  document.getElementById('scopeNote').textContent = note;
+  kpiActive = 'all';
+  showDashTab('submissions');
+}
+
+function showDashTab(tab) {
+  document.getElementById('tabSubmissions').style.display = (tab === 'submissions') ? 'block' : 'none';
+  document.getElementById('tabUsers').style.display       = (tab === 'users')       ? 'block' : 'none';
+  if (tab === 'submissions') { renderStats(); renderSubs(); populateDeptFilter(); }
+  if (tab === 'users')       { renderEmps(); renderPending(); populateReportsTo(); }
+}
+
+// ============================================================
+// KPI DRILL-DOWN
+// ============================================================
+function kpiFilter(which) {
+  kpiActive = which;
+  var cards = ['all','late','absent','emergency','pending'];
+  for (var i = 0; i < cards.length; i++) {
+    var el = document.getElementById('kpi-' + cards[i]);
+    var cls = 'sc';
+    if (cards[i] === which) {
+      cls = which === 'all' ? 'sc active' : which === 'late' ? 'sc active-late' :
+            which === 'absent' ? 'sc active-absent' : which === 'emergency' ? 'sc active-emergency' : 'sc active-pending';
+    }
+    el.className = cls;
+  }
+  document.getElementById('fType').value   = (which === 'late'||which === 'absent'||which === 'emergency') ? which : '';
+  document.getElementById('fStatus').value = which === 'pending' ? 'pending' : '';
+  var badge = document.getElementById('activeFilterBadge');
+  var labels = { all:'All', late:'Late', absent:'Absent', emergency:'Emergency', pending:'Pending Review' };
+  badge.innerHTML = which === 'all' ? '' :
+    '<div class="filter-active">Filtered: ' + labels[which] + ' <button onclick="kpiFilter(&apos;all&apos;)" title="Clear">&times;</button></div>';
+  renderSubs();
+}
+
+// ============================================================
+// EMPLOYEE: submit
+// ============================================================
+function selType(t) {
+  selectedType = t;
+  ['late','absent','emergency'].forEach(function(x){
+    document.getElementById('tc-'+x).className = 'type-card' + (x === t ? ' sel-'+t : '');
+  });
+  document.getElementById('etGroup').style.display = (t === 'late') ? 'block' : 'none';
+}
+
+function submitForm(e) {
+  e.preventDefault();
+  if (!selectedType) { document.getElementById('empMsg').innerHTML = '<div class="al ae">Please select a notification type.</div>'; return; }
+  var reason = document.getElementById('subReason').value.trim();
+  if (reason.length < 5) { document.getElementById('empMsg').innerHTML = '<div class="al ae">Reason is too short.</div>'; return; }
+  DB.submissions.push({ id:DB.nextSid++, user_id:currentUser.id, type:selectedType, reason:reason,
+    expected_time:document.getElementById('subEt').value||'', date:document.getElementById('subDate').value,
+    department:currentUser.department, status:'pending', admin_notes:'', submitted_at:localNow() });
+  saveDB();
+  document.getElementById('empMsg').innerHTML = '<div class="al ao">&#10003; Submitted! HR has been notified.</div>';
+  document.getElementById('empForm').reset();
+  document.getElementById('subDate').value = localToday();
+  document.getElementById('subDept').value = currentUser.department;
+  document.getElementById('charCount').textContent = '0/500';
+  selectedType = null;
+  ['late','absent','emergency'].forEach(function(t){ document.getElementById('tc-'+t).className='type-card'; });
+  document.getElementById('etGroup').style.display = 'none';
+  renderHistory();
+  setTimeout(function(){ document.getElementById('empMsg').innerHTML=''; }, 5000);
+}
+
+function renderHistory() {
+  var rows = [];
+  for (var i = 0; i < DB.submissions.length; i++) {
+    if (DB.submissions[i].user_id === currentUser.id) { rows.push(DB.submissions[i]); }
+  }
+  rows.sort(function(a,b){ return b.submitted_at < a.submitted_at ? -1 : 1; });
+  rows = rows.slice(0, 30);
+  var el = document.getElementById('empHistory');
+  if (!rows.length) { el.innerHTML = '<div class="empty-state"><div class="ei">&#128203;</div><p>No submissions yet.</p></div>'; return; }
+  var tl = { late:'Late', absent:'Absent', emergency:'Emergency' };
+  var html = '<div class="tbl-wrap"><table><thead><tr><th>Date</th><th>Type</th><th>Reason</th><th>Submitted</th><th>Status</th><th>Notes</th></tr></thead><tbody>';
+  for (var i = 0; i < rows.length; i++) {
+    var r = rows[i];
+    html += '<tr><td style="white-space:nowrap">'+r.date+'</td><td><span class="badge b-'+r.type+'">'+tl[r.type]+'</span></td>';
+    html += '<td style="max-width:200px">'+esc(r.reason)+'</td>';
+    html += '<td style="font-size:.78rem;color:var(--text2);white-space:nowrap">'+r.submitted_at+'</td>';
+    html += '<td><span class="badge b-'+r.status+'">'+r.status+'</span></td>';
+    html += '<td style="font-size:.78rem;color:var(--text2)">'+esc(r.admin_notes||'&mdash;')+'</td></tr>';
+  }
+  html += '</tbody></table></div>';
+  el.innerHTML = html;
+}
+
+// ============================================================
+// DASHBOARD: stats
+// ============================================================
+function renderStats() {
+  var subs = getVisibleSubmissions();
+  var late=0, absent=0, emergency=0, pending=0;
+  for (var i = 0; i < subs.length; i++) {
+    if (subs[i].type==='late') { late++; }
+    if (subs[i].type==='absent') { absent++; }
+    if (subs[i].type==='emergency') { emergency++; }
+    if (subs[i].status==='pending') { pending++; }
+  }
+  document.getElementById('aTotal').textContent  = subs.length;
+  document.getElementById('aLate').textContent   = late;
+  document.getElementById('aAbsent').textContent = absent;
+  document.getElementById('aEmerg').textContent  = emergency;
+  document.getElementById('aPend').textContent   = pending;
+}
+
+function populateDeptFilter() {
+  var depts = {};
+  var visible = getVisibleSubmissions();
+  for (var i = 0; i < visible.length; i++) { if (visible[i].department) { depts[visible[i].department] = true; } }
+  var el = document.getElementById('fDept');
+  var cur = el.value;
+  while (el.options.length > 1) { el.remove(1); }
+  Object.keys(depts).sort().forEach(function(d){ var o=document.createElement('option'); o.value=d; o.textContent=d; el.appendChild(o); });
+  if (cur) { el.value = cur; }
+}
+
+// ============================================================
+// DASHBOARD: submissions table
+// ============================================================
+function getFiltered() {
+  var type   = document.getElementById('fType').value;
+  var status = document.getElementById('fStatus').value;
+  var dept   = document.getElementById('fDept').value;
+  var from   = document.getElementById('fFrom').value;
+  var to     = document.getElementById('fTo').value;
+  var search = document.getElementById('fSearch').value.toLowerCase();
+  var visible = getVisibleSubmissions();
+  var rows = [];
+  for (var i = 0; i < visible.length; i++) {
+    var s = visible[i];
+    var u = findUser(s.user_id);
+    if (!u) { continue; }
+    if (type   && s.type !== type)     { continue; }
+    if (status && s.status !== status) { continue; }
+    if (dept   && (s.department||u.department) !== dept) { continue; }
+    if (from   && s.date < from)       { continue; }
+    if (to     && s.date > to)         { continue; }
+    if (search && u.full_name.toLowerCase().indexOf(search)===-1 && u.employee_id.toLowerCase().indexOf(search)===-1) { continue; }
+    rows.push({ id:s.id, user_id:s.user_id, type:s.type, reason:s.reason, expected_time:s.expected_time,
+      date:s.date, status:s.status, admin_notes:s.admin_notes, submitted_at:s.submitted_at,
+      department:s.department||u.department, full_name:u.full_name, employee_id:u.employee_id });
+  }
+  rows.sort(function(a,b){ return b.submitted_at < a.submitted_at ? -1 : 1; });
+  return rows;
+}
+
+function renderSubs() {
+  var rows = getFiltered();
+  var el = document.getElementById('subTable');
+  var tl = { late:'Late', absent:'Absent', emergency:'Emergency' };
+  if (!rows.length) { el.innerHTML = '<div class="empty-state"><div class="ei">&#128269;</div><p>No submissions match your filters.</p></div>'; return; }
+  var html = '<div class="tbl-wrap"><table><thead><tr><th>Date</th><th>Employee</th><th>Department</th><th>Type</th><th>Reason</th><th>Expected</th><th>Submitted</th><th>Status</th><th></th></tr></thead><tbody>';
+  for (var i = 0; i < rows.length; i++) {
+    var r = rows[i];
+    html += '<tr><td style="white-space:nowrap">'+r.date+'</td>';
+    html += '<td><strong>'+esc(r.full_name)+'</strong><br><small style="color:var(--text2)">'+r.employee_id+'</small></td>';
+    html += '<td style="font-size:.83rem">'+esc(r.department)+'</td>';
+    html += '<td><span class="badge b-'+r.type+'">'+tl[r.type]+'</span></td>';
+    html += '<td style="max-width:150px;font-size:.83rem">'+esc(r.reason)+'</td>';
+    html += '<td style="font-size:.82rem;color:var(--text2)">'+(r.expected_time||'&mdash;')+'</td>';
+    html += '<td style="font-size:.78rem;color:var(--text2);white-space:nowrap">'+r.submitted_at+'</td>';
+    html += '<td><span class="badge b-'+r.status+'">'+r.status+'</span></td>';
+    html += '<td><button class="btn btn-o btn-sm" onclick="openReview('+r.id+')">Review</button></td></tr>';
+  }
+  html += '</tbody></table></div>';
+  el.innerHTML = html;
+}
+
+// ============================================================
+// REVIEW MODAL
+// ============================================================
+function openReview(id) {
+  reviewId = id;
+  var s = findSub(id);
+  var u = findUser(s.user_id);
+  var tl = { late:'Late Arrival', absent:'Absent', emergency:'Emergency Leave' };
+  document.getElementById('rvTitle').textContent = 'Review: ' + (u ? u.full_name : '?');
+  document.getElementById('rvDetail').innerHTML =
+    '<span class="badge b-'+s.type+'">'+tl[s.type]+'</span>&nbsp; Date: <strong>'+s.date+'</strong>'+(s.expected_time?' &nbsp; Expected: <strong>'+s.expected_time+'</strong>':'')+
+    '<br>Dept: <strong>'+esc(s.department||(u?u.department:''))+'</strong><br>Reason: '+esc(s.reason)+
+    '<br><small style="color:var(--text2)">Submitted: '+s.submitted_at+'</small>';
+  document.getElementById('rvStatus').value = s.status;
+  document.getElementById('rvNotes').value  = s.admin_notes || '';
+  showModal('reviewModal');
+}
+
+function saveReview() {
+  var s = findSub(reviewId);
+  if (s) { s.status = document.getElementById('rvStatus').value; s.admin_notes = document.getElementById('rvNotes').value; }
+  saveDB();
+  closeModal('reviewModal');
+  renderSubs(); renderStats();
+}
+
+// ============================================================
+// USERS TABLE
+// ============================================================
+function populateReportsTo() {
+  var el = document.getElementById('nReportsTo');
+  while (el.options.length > 1) { el.remove(1); }
+  for (var i = 0; i < DB.users.length; i++) {
+    var u = DB.users[i];
+    if (!u.is_active) { continue; }
+    var o = document.createElement('option');
+    o.value = u.id; o.textContent = u.full_name + ' (' + ROLE_LABELS[u.role] + ')';
+    el.appendChild(o);
+  }
+}
+
+function updateRoleDesc() {
+  var role = document.getElementById('nRole').value;
+  var el = document.getElementById('roleDesc');
+  el.textContent = ROLE_DESC[role] || '';
+  el.style.display = role ? 'block' : 'none';
+}
+
+function renderEmps() {
+  var el = document.getElementById('empTable');
+  if (!DB.users.length) { el.innerHTML = '<p style="color:var(--text2);text-align:center;padding:20px">No users.</p>'; return; }
+  var html = '<div class="tbl-wrap"><table><thead><tr><th>Username</th><th>Name</th><th>Department</th><th>Role</th><th>Reports To</th><th>Status</th><th>Actions</th></tr></thead><tbody>';
+  for (var i = 0; i < DB.users.length; i++) {
+    var u = DB.users[i];
+    var isSelf = (currentUser && u.id === currentUser.id);
+    var mgr = u.reports_to ? findUser(u.reports_to) : null;
+    var mgrName = mgr ? esc(mgr.full_name) : '&mdash;';
+    var bg = u.is_active ? '#d1fae5' : '#fee2e2';
+    var col = u.is_active ? '#065f46' : '#991b1b';
+    html += '<tr>';
+    html += '<td><strong>'+esc(u.employee_id)+'</strong></td>';
+    html += '<td>'+esc(u.full_name)+'<br><small style="color:var(--text2)">'+esc(u.email)+'</small></td>';
+    html += '<td style="font-size:.83rem">'+esc(u.department)+'</td>';
+    html += '<td><span class="badge b-'+u.role+'">'+(ROLE_LABELS[u.role]||u.role)+'</span></td>';
+    html += '<td style="font-size:.83rem">'+mgrName+'</td>';
+    html += '<td><span class="badge" style="background:'+bg+';color:'+col+'">'+(u.is_active?'Active':'Inactive')+'</span></td>';
+    if (isSelf) {
+      html += '<td><small style="color:var(--text2)">you</small></td>';
+    } else {
+      html += '<td><div class="acts">';
+      html += '<button class="btn btn-o btn-sm" onclick="openResetPw('+u.id+')">Reset PW</button>';
+      html += '<button class="btn btn-o btn-sm" onclick="toggleEmp('+u.id+','+u.is_active+')">'+(u.is_active?'Deactivate':'Activate')+'</button>';
+      html += '<button class="btn btn-danger btn-sm" onclick="openDelete('+u.id+')">Delete</button>';
+      html += '</div></td>';
+    }
+    html += '</tr>';
+  }
+  html += '</tbody></table></div>';
+  el.innerHTML = html;
+}
+
+function renderPending() {
+  var pending = DB.users.filter(function(u){ return !u.is_active; });
+  var card = document.getElementById('pendingCard');
+  var tbl  = document.getElementById('pendingTable');
+  if (!card || !tbl) { return; }
+  if (pending.length === 0) { card.style.display = 'none'; return; }
+  card.style.display = '';
+  var html = '<div class="tbl-wrap"><table><thead><tr><th>Username</th><th>Name</th><th>Email</th><th>Dept</th><th>Actions</th></tr></thead><tbody>';
+  pending.forEach(function(u) {
+    html += '<tr><td>'+esc(u.employee_id)+'</td><td>'+esc(u.full_name)+'</td><td>'+esc(u.email)+'</td><td>'+esc(u.department)+'</td>';
+    html += '<td style="display:flex;gap:6px">';
+    html += '<button class="btn btn-p" style="padding:4px 10px;font-size:.78rem" onclick="activateUser('+u.id+')">&#10003; Activate</button>';
+    html += '<button class="btn" style="padding:4px 10px;font-size:.78rem;background:#fee2e2;color:#991b1b;border:none" onclick="deletePending('+u.id+')">&#10007; Delete</button>';
+    html += '</td></tr>';
+  });
+  html += '</tbody></table></div>';
+  tbl.innerHTML = html;
+}
+
+function activateUser(uid) {
+  for (var i=0;i<DB.users.length;i++) {
+    if (DB.users[i].id === uid) { DB.users[i].is_active = true; break; }
+  }
+  saveDB(); renderEmps(); renderPending(); populateReportsTo();
+}
+
+function deletePending(uid) {
+  DB.users = DB.users.filter(function(u){ return u.id !== uid; });
+  saveDB(); renderEmps(); renderPending(); populateReportsTo();
+}
+
+
+function addEmp(e) {
+  e.preventDefault();
+  var eid   = document.getElementById('nEid').value.trim().toUpperCase();
+  var name  = document.getElementById('nName').value.trim();
+  var email = document.getElementById('nEmail').value.trim().toLowerCase();
+  var dept  = document.getElementById('nDept').value.trim();
+  var pw    = document.getElementById('nPw').value;
+  var role  = document.getElementById('nRole').value;
+  var rto   = document.getElementById('nReportsTo').value;
+  var msg   = document.getElementById('empAddMsg');
+  for (var i = 0; i < DB.users.length; i++) {
+    if (DB.users[i].employee_id.toLowerCase() === eid.toLowerCase()) { msg.innerHTML='<div class="al ae" style="margin-top:10px">Username already exists.</div>'; return; }
+    if (DB.users[i].email === email) { msg.innerHTML='<div class="al ae" style="margin-top:10px">Email already exists.</div>'; return; }
+  }
+  if (pw.length < 8) { msg.innerHTML='<div class="al ae" style="margin-top:10px">Password must be at least 8 characters.</div>'; return; }
+  DB.users.push({ id:DB.nextUid++, employee_id:eid, full_name:name, email:email, department:dept,
+    role:role, password:pw, is_active:true, reports_to: rto ? parseInt(rto) : null });
+  saveDB();
+  msg.innerHTML = '<div class="al ao" style="margin-top:10px">User added. They can now log in.</div>';
+  e.target.reset(); document.getElementById('roleDesc').style.display='none';
+  renderEmps(); renderPending(); populateReportsTo(); populateDeptFilter();
+  setTimeout(function(){ msg.innerHTML=''; }, 4000);
+}
+
+function toggleEmp(id, active) {
+  var u = findUser(id);
+  if (u) { u.is_active = !active; }
+  saveDB(); renderEmps();
+}
+
+// ============================================================
+// RESET PASSWORD (all admin roles)
+// ============================================================
+function openResetPw(id) {
+  var role = currentUser ? currentUser.role : '';
+  if (role !== 'system_admin' && role !== 'manager' && role !== 'supervisor') {
+    alert('You do not have permission to reset passwords.'); return;
+  }
+  resetPwUserId = id;
+  var u = findUser(id);
+  document.getElementById('resetPwDetail').innerHTML = 'Resetting password for: <strong>'+esc(u.full_name)+'</strong> ('+esc(u.employee_id)+')';
+  document.getElementById('resetPwNew').value = '';
+  document.getElementById('resetPwConfirm').value = '';
+  document.getElementById('resetPwErr').innerHTML = '';
+  showModal('resetPwModal');
+}
+
+function saveResetPw() {
+  var pw1 = document.getElementById('resetPwNew').value;
+  var pw2 = document.getElementById('resetPwConfirm').value;
+  var err = document.getElementById('resetPwErr');
+  if (pw1.length < 8) { err.innerHTML='<div class="al ae">Password must be at least 8 characters.</div>'; return; }
+  if (pw1 !== pw2)    { err.innerHTML='<div class="al ae">Passwords do not match.</div>'; return; }
+  var u = findUser(resetPwUserId);
+  if (u) { u.password = pw1; }
+  saveDB(); closeModal('resetPwModal');
+  var msg = document.getElementById('empAddMsg');
+  if (msg) { msg.innerHTML='<div class="al ao">Password reset successfully.</div>'; setTimeout(function(){ msg.innerHTML=''; },4000); }
+}
+
+// ============================================================
+// DELETE ACCOUNT (system_admin only)
+// ============================================================
+function openDelete(id) {
+  if (!currentUser || currentUser.role !== 'system_admin') { alert('Only System Admin can delete accounts.'); return; }
+  deleteUserId = id;
+  var u = findUser(id);
+  document.getElementById('deleteDetail').innerHTML = 'You are about to delete: <strong>'+esc(u.full_name)+'</strong> ('+esc(u.employee_id)+') &mdash; '+esc(u.department);
+  showModal('deleteModal');
+}
+
+function confirmDelete() {
+  DB.users = DB.users.filter(function(u){ return u.id !== deleteUserId; });
+  saveDB(); closeModal('deleteModal'); renderEmps(); renderPending(); populateReportsTo();
+}
+
+// ============================================================
+// CLEAR ALL DATA (system_admin only)
+// ============================================================
+function clearAllData() {
+  if (!confirm('Delete ALL submissions? This cannot be undone.')) { return; }
+  DB.submissions = []; DB.nextSid = 1;
+  saveDB(); renderStats(); renderSubs();
+}
+
+// ============================================================
+// CSV EXPORT
+// ============================================================
+function exportCSV() {
+  var rows = getFiltered();
+  var lines = ['ID,Emp ID,Name,Department,Type,Date,Reason,Expected Time,Submitted,Status,Admin Notes'];
+  for (var i = 0; i < rows.length; i++) {
+    var r = rows[i];
+    lines.push([r.id, r.employee_id, r.full_name, r.department, r.type, r.date,
+      '"'+r.reason.replace(/"/g,'""')+'"', r.expected_time||'', r.submitted_at, r.status,
+      '"'+(r.admin_notes||'').replace(/"/g,'""')+'"'].join(','));
+  }
+  var a = document.createElement('a');
+  a.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(lines.join('\n'));
+  a.download = 'attendance_' + localToday() + '.csv';
+  a.click();
+}
+
+// ============================================================
+// XLSX IMPORT
+// ============================================================
+function handleXlsxImport(e) {
+  var file = e.target.files[0];
+  if (!file) { return; }
+  document.getElementById('xlsxFileName').textContent = file.name;
+  document.getElementById('xlsxMsg').innerHTML = '';
+  document.getElementById('xlsxPreview').innerHTML = '';
+  var reader = new FileReader();
+  reader.onload = function(ev) {
+    try {
+      var rows = parseXlsx(ev.target.result);
+      if (rows.length < 2) { showXlsxMsg('ae', 'File is empty or has no data rows.'); return; }
+      // rows[0] is header, skip it
+      var data = rows.slice(1);
+      var preview = [];
+      var errors  = [];
+      for (var i = 0; i < data.length; i++) {
+        var row = data[i];
+        // Skip completely empty rows
+        var allEmpty = true;
+        for (var c = 0; c < row.length; c++) { if (String(row[c]||'').trim()) { allEmpty=false; break; } }
+        if (allEmpty) { continue; }
+        var uname = String(row[0]||'').trim().toLowerCase();
+        var fname = String(row[1]||'').trim();
+        var email = String(row[2]||'').trim().toLowerCase();
+        var dept  = String(row[3]||'').trim();
+        var role  = String(row[4]||'employee').trim().toLowerCase().replace(' ','_');
+        var pw    = String(row[5]||'').trim();
+        var rto   = String(row[6]||'').trim().toLowerCase();
+        if (!uname)  { errors.push('Row '+(i+2)+': Username is required.'); continue; }
+        if (!fname)  { errors.push('Row '+(i+2)+': Full Name is required.'); continue; }
+        if (!email)  { errors.push('Row '+(i+2)+': Email is required.'); continue; }
+        if (!dept)   { errors.push('Row '+(i+2)+': Department is required.'); continue; }
+        if (!pw || pw.length < 8) { errors.push('Row '+(i+2)+': Password missing or less than 8 characters.'); continue; }
+        var validRoles = ['employee','supervisor','manager','system_admin'];
+        if (validRoles.indexOf(role) === -1) { errors.push('Row '+(i+2)+': Invalid role "'+role+'".'); continue; }
+        // Check duplicates in existing DB
+        var dupUser = false, dupEmail = false;
+        for (var d = 0; d < DB.users.length; d++) {
+          if (DB.users[d].employee_id.toLowerCase() === uname) { dupUser=true; break; }
+          if (DB.users[d].email === email) { dupEmail=true; break; }
+        }
+        if (dupUser)  { errors.push('Row '+(i+2)+': Username "'+uname+'" already exists (skipped).'); continue; }
+        if (dupEmail) { errors.push('Row '+(i+2)+': Email "'+email+'" already exists (skipped).'); continue; }
+        preview.push({ uname:uname, fname:fname, email:email, dept:dept, role:role, pw:pw, rto:rto });
+      }
+      if (preview.length === 0 && errors.length === 0) { showXlsxMsg('ae','No valid rows found.'); return; }
+      showXlsxPreview(preview, errors);
+    } catch(ex) {
+      showXlsxMsg('ae', 'Could not read file. Make sure it is a valid .xlsx file. Error: ' + ex.message);
+    }
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+function showXlsxMsg(cls, msg) {
+  document.getElementById('xlsxMsg').innerHTML = '<div class="al a'+cls+'">'+esc(msg)+'</div>';
+}
+
+function showXlsxPreview(rows, errors) {
+  var el = document.getElementById('xlsxPreview');
+  var html = '';
+  if (errors.length) {
+    html += '<div class="al aw" style="margin-bottom:10px"><strong>'+errors.length+' row(s) skipped:</strong><br>' +
+      errors.map(function(e){ return esc(e); }).join('<br>') + '</div>';
+  }
+  if (rows.length) {
+    html += '<p style="font-size:.85rem;font-weight:700;margin-bottom:8px">Preview: '+rows.length+' user(s) ready to import</p>';
+    html += '<div class="tbl-wrap"><table><thead><tr><th>Username</th><th>Full Name</th><th>Email</th><th>Dept</th><th>Role</th><th>Reports To</th></tr></thead><tbody>';
+    for (var i = 0; i < rows.length; i++) {
+      var r = rows[i];
+      html += '<tr><td>'+esc(r.uname)+'</td><td>'+esc(r.fname)+'</td><td>'+esc(r.email)+'</td><td>'+esc(r.dept)+'</td>';
+      html += '<td><span class="badge b-'+r.role+'">'+(ROLE_LABELS[r.role]||r.role)+'</span></td>';
+      html += '<td>'+esc(r.rto||'&mdash;')+'</td></tr>';
+    }
+    html += '</tbody></table></div>';
+    html += '<div style="margin-top:10px;display:flex;gap:8px">';
+    html += '<button class="btn btn-p" onclick="confirmXlsxImport()">Import '+rows.length+' User(s)</button>';
+    html += '<button class="btn btn-o" onclick="cancelXlsxImport()">Cancel</button>';
+    html += '</div>';
+    // Store preview data for confirm step
+    window._xlsxPending = rows;
+  }
+  el.innerHTML = html;
+}
+
+function confirmXlsxImport() {
+  var rows = window._xlsxPending || [];
+  var added = 0;
+  for (var i = 0; i < rows.length; i++) {
+    var r = rows[i];
+    // Resolve reports_to by username
+    var rtoId = null;
+    if (r.rto) {
+      for (var d = 0; d < DB.users.length; d++) {
+        if (DB.users[d].employee_id.toLowerCase() === r.rto.toLowerCase()) { rtoId = DB.users[d].id; break; }
+      }
+    }
+    DB.users.push({ id:DB.nextUid++, employee_id:r.uname, full_name:r.fname, email:r.email,
+      department:r.dept, role:r.role, password:r.pw, is_active:true, reports_to:rtoId });
+    added++;
+  }
+  saveDB();
+  window._xlsxPending = [];
+  document.getElementById('xlsxPreview').innerHTML = '';
+  document.getElementById('xlsxFileName').textContent = 'No file chosen';
+  document.getElementById('xlsxFile').value = '';
+  showXlsxMsg('o', added + ' user(s) imported successfully.');
+  renderEmps(); renderPending(); populateReportsTo(); populateDeptFilter();
+}
+
+function cancelXlsxImport() {
+  window._xlsxPending = [];
+  document.getElementById('xlsxPreview').innerHTML = '';
+  document.getElementById('xlsxFileName').textContent = 'No file chosen';
+  document.getElementById('xlsxFile').value = '';
+}
+
+// ── XLSX parser via SheetJS ────────────────────────────────────────────────
+function parseXlsx(buffer) {
+  var wb = XLSX.read(new Uint8Array(buffer), { type: 'array' });
+  var ws = wb.Sheets[wb.SheetNames[0]];
+  var raw = XLSX.utils.sheet_to_json(ws, { header: 1, defval: '' });
+  return raw;
+}
+
+// ============================================================
+// REGISTRATION
+// ============================================================
+function lookupRosterEmail(val) {
+  var hint = document.getElementById('regEmailHint');
+  var deptInput = document.getElementById('regDept');
+  var email = val.trim().toLowerCase();
+  if (!email) { hint.innerHTML=''; deptInput.value=''; return; }
+  if (ROSTER_LOOKUP[email]) {
+    deptInput.value = ROSTER_LOOKUP[email];
+    hint.innerHTML = '<span style="color:#16a34a">&#10003; Found in roster &mdash; department auto-filled.</span>';
+  } else {
+    deptInput.value = '';
+    hint.innerHTML = email.indexOf('@') > 0
+      ? '<span style="color:#dc2626">&#9888; Email not found in roster. Contact your administrator.</span>'
+      : '';
+  }
+}
+
+function showRegister() {
+  document.getElementById('viewLogin').style.display    = 'none';
+  document.getElementById('viewRegister').style.display = '';
+  document.getElementById('regMsg').innerHTML = '';
+  ['regUser','regName','regEmail','regDept','regPw','regPw2'].forEach(function(id){ document.getElementById(id).value=''; });
+  document.getElementById('regEmailHint').innerHTML='';
+}
+function showLogin() {
+  document.getElementById('viewRegister').style.display = 'none';
+  document.getElementById('viewLogin').style.display    = '';
+  document.getElementById('loginErr').innerHTML = '';
+}
+function doRegister(e) {
+  e.preventDefault();
+  var uname = document.getElementById('regUser').value.trim().toLowerCase();
+  var fname  = document.getElementById('regName').value.trim();
+  var email  = document.getElementById('regEmail').value.trim().toLowerCase();
+  var dept   = document.getElementById('regDept').value.trim();
+  var pw     = document.getElementById('regPw').value;
+  var pw2    = document.getElementById('regPw2').value;
+  var msg    = document.getElementById('regMsg');
+
+  if (!uname || !fname || !email || !dept) {
+    msg.innerHTML='<div class="al ae">Please fill in all required fields.</div>'; return;
+  }
+  if (pw.length < 8) {
+    msg.innerHTML='<div class="al ae">Password must be at least 8 characters.</div>'; return;
+  }
+  if (pw !== pw2) {
+    msg.innerHTML='<div class="al ae">Passwords do not match.</div>'; return;
+  }
+  for (var i=0; i<DB.users.length; i++) {
+    if (DB.users[i].employee_id.toLowerCase() === uname) {
+      msg.innerHTML='<div class="al ae">Username already taken.</div>'; return;
+    }
+    if (DB.users[i].email === email) {
+      msg.innerHTML='<div class="al ae">Email already registered.</div>'; return;
+    }
+  }
+  // Add as pending employee — is_active: false so they cannot log in yet
+  DB.users.push({ id:DB.nextUid++, employee_id:uname, full_name:fname, email:email,
+    department:dept, role:'employee', password:pw, is_active:false, reports_to:null });
+  saveDB();
+  msg.innerHTML='<div class="al ao"><strong>Request submitted!</strong> An administrator will activate your account before you can log in.</div>';
+  ['regUser','regName','regEmail','regDept','regPw','regPw2'].forEach(function(id){ document.getElementById(id).value=''; });
+}
+
+// ============================================================
+// HELPERS
+// ============================================================
+function findUser(id) { for (var i=0;i<DB.users.length;i++) { if (DB.users[i].id===id) return DB.users[i]; } return null; }
+function findSub(id)  { for (var i=0;i<DB.submissions.length;i++) { if (DB.submissions[i].id===id) return DB.submissions[i]; } return null; }
+function showModal(id)  { document.getElementById(id).classList.add('show'); }
+function closeModal(id) { document.getElementById(id).classList.remove('show'); }
+function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+var ovs = document.querySelectorAll('.ov');
+for (var i=0;i<ovs.length;i++){ovs[i].addEventListener('click',function(e){if(e.target===this)this.classList.remove('show');});}
+</script>
+</body>
+</html>
