@@ -1523,8 +1523,10 @@ function doRegister(e) {
     department:dept, role:'employee', password:pw, is_active:false,
     reports_to:supUserId, _sup_email:supEmail, dayforce_id:dayforceId });
   saveDB();
-  msg.innerHTML='<div class="al ao"><strong>Request submitted!</strong> An administrator will activate your account before you can log in.</div>';
-  ['regUser','regName','regEmail','regDept','regPw','regPw2'].forEach(function(id){ document.getElementById(id).value=''; });
+  // Show success screen
+  document.getElementById('regFormBody').style.display = 'none';
+  document.getElementById('regSuccess').style.display  = 'block';
+  document.getElementById('regSuccessName').textContent = fname;
 }
 
 // ============================================================
