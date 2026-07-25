@@ -1,0 +1,11 @@
+# Netlify configuration
+# Drop the entire netlify-version/ folder into Netlify's deploy UI
+# or connect your GitHub repo and set publish directory to "netlify-version"
+
+[build]
+  publish = "."
+
+[[redirects]]
+  from = "/*"
+  to   = "/index.html"
+  status = 200

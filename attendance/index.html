@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#1a1d21">
+<title>Attendance Notifier</title>
+<style>
+:root{color-scheme:light;--blue:#1164A3;--bd:#0d5091;--border:#e8e8e8;--bg:#f4f4f4;--card:#fff;--text:#1d1c1d;--text2:#616061}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+.nav{background:#1a1d21;color:#fff;padding:13px 20px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
+.nav-brand{font-size:1rem;font-weight:800;display:flex;align-items:center;gap:8px}
+.nav-right{display:flex;align-items:center;gap:10px}
+.nav-right span{font-size:.82rem;opacity:.65}
+.nav-btn{color:rgba(255,255,255,.7);font-size:.83rem;padding:5px 10px;border-radius:4px;cursor:pointer;border:none;background:none}
+.nav-btn:hover{background:rgba(255,255,255,.1);color:#fff}
+.con{max-width:860px;margin:0 auto;padding:24px 16px}
+.card{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:24px;margin-bottom:20px;box-shadow:0 1px 4px rgba(0,0,0,.05)}
+.card h2{font-size:1.05rem;font-weight:800;margin-bottom:16px}
+label{display:block;font-size:.78rem;font-weight:700;text-transform:uppercase;letter-spacing:.45px;color:var(--text2);margin-bottom:5px}
+input,select,textarea{width:100%;padding:10px 12px;border:1.5px solid #ddd;border-radius:5px;font-size:.93rem;outline:none;background:#fff;font-family:inherit;color:var(--text)}
+input:focus,select:focus,textarea:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(17,100,163,.12)}
+.fg{margin-bottom:15px}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.btn{padding:10px 20px;border-radius:5px;font-size:.9rem;font-weight:700;cursor:pointer;border:none;display:inline-flex;align-items:center;gap:6px}
+.btn:disabled{opacity:.6;cursor:not-allowed}
+.btn-p{background:var(--blue);color:#fff}.btn-p:hover:not(:disabled){background:var(--bd)}
+.btn-o{background:#fff;border:1.5px solid #ddd;color:var(--text)}.btn-o:hover:not(:disabled){background:#f8f8f8}
+.btn-sm{padding:5px 11px;font-size:.78rem}
+.al{padding:11px 14px;border-radius:6px;margin-bottom:14px;font-size:.88rem}
+.ao{background:#d1fae5;border:1px solid #6ee7b7;color:#065f46}
+.ae{background:#fee2e2;border:1px solid #fca5a5;color:#991b1b}
+.ai{background:#dbeafe;border:1px solid #93c5fd;color:#1e40af}
+.aw{background:#fef3c7;border:1px solid #fcd34d;color:#92400e}
+.badge{display:inline-block;padding:2px 8px;border-radius:3px;font-size:.72rem;font-weight:700;text-transform:uppercase}
+.b-late{background:#fef3c7;color:#92400e}.b-absent{background:#fee2e2;color:#991b1b}.b-emergency{background:#ede9fe;color:#5b21b6}
+.b-pending{background:#e8e8e8;color:#616061}.b-approved{background:#d1fae5;color:#065f46}.b-rejected{background:#fee2e2;color:#991b1b}
+.b-admin{background:#dbeafe;color:#1e40af}.b-employee{background:#f3f4f6;color:#374151}
+table{width:100%;border-collapse:collapse;font-size:.85rem}
+th{text-align:left;padding:9px 12px;background:#f8f8f8;font-weight:700;border-bottom:2px solid var(--border);white-space:nowrap}
+td{padding:9px 12px;border-bottom:1px solid #f0f0f0;vertical-align:top}
+tr:hover td{background:#fafafa}
+.tbl-wrap{overflow-x:auto}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:12px;margin-bottom:20px}
+.sc{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:14px;text-align:center}
+.sc .n{font-size:1.9rem;font-weight:800;color:var(--blue)}.sc .l{font-size:.72rem;color:var(--text2);margin-top:2px;text-transform:uppercase;letter-spacing:.4px}
+.fi{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px}
+.fi select,.fi input{width:auto;flex:1;min-width:110px;padding:7px 10px;font-size:.85rem}
+.login-wrap{display:flex;align-items:center;justify-content:center;min-height:100vh;background:linear-gradient(135deg,#1a1d21,#2c3038)}
+.login-card{background:#fff;border-radius:12px;padding:38px 34px;width:100%;max-width:400px;margin:20px;box-shadow:0 20px 60px rgba(0,0,0,.45)}
+.logo-mark{width:54px;height:54px;background:linear-gradient(135deg,#1164A3,#1976d2);border-radius:13px;display:inline-flex;align-items:center;justify-content:center;margin-bottom:14px}
+.ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:200;align-items:center;justify-content:center;padding:16px}
+.ov.show{display:flex}
+.modal{background:#fff;border-radius:10px;padding:28px;width:100%;max-width:460px;box-shadow:0 10px 40px rgba(0,0,0,.25);max-height:90vh;overflow-y:auto}
+.modal h3{font-size:1rem;font-weight:800;margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid var(--border)}
+.btn-row{display:flex;gap:8px;justify-content:flex-end;margin-top:8px}
+.demo-bar{background:linear-gradient(90deg,#4A154B,#7C3085);color:#fff;text-align:center;padding:7px 16px;font-size:.8rem;font-weight:600}
+.demo-bar a{color:#fff;opacity:.85;text-decoration:underline;cursor:pointer}
+.type-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px}
+.type-card{border:2px solid var(--border);border-radius:8px;padding:14px 10px;text-align:center;cursor:pointer;transition:border-color .15s,background .15s;user-select:none}
+.type-card:hover{border-color:#aaa;background:#fafafa}
+.type-card.sel-late{border-color:#E8A838;background:#fffbeb}
+.type-card.sel-absent{border-color:#E01E5A;background:#fff1f5}
+.type-card.sel-emergency{border-color:#7C3085;background:#faf5ff}
+.type-card .ticon{font-size:1.5rem;margin-bottom:4px}
+.type-card .tlabel{font-size:.78rem;font-weight:700;text-transform:uppercase;letter-spacing:.4px}
+.sec-note{font-size:.78rem;color:var(--text2);display:flex;align-items:center;gap:5px;padding:9px 12px;background:#f8f8f8;border-radius:6px;border:1px solid var(--border)}
+@media(max-width:600px){.row2{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+
+<div class="demo-bar">
+  Demo Mode — data is in memory only and resets on reload.
+  <a onclick="showModal('backendModal')">Learn how to connect a real backend</a>
+</div>
+
+<!-- LOGIN -->
+<div id="viewLogin" class="login-wrap">
+  <div class="login-card">
+    <div style="text-align:center;margin-bottom:28px">
+      <div class="logo-mark">
+        <svg width="26" height="26" fill="none" stroke="#fff" stroke-width="2.2" viewBox="0 0 24 24">
+          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+          <circle cx="9" cy="7" r="4"/>
+          <path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/>
+        </svg>
+      </div>
+      <h1 style="font-size:1.35rem;font-weight:800;margin-bottom:4px">Attendance Notifier</h1>
+      <p style="color:var(--text2);font-size:.85rem">Sign in to submit your notification</p>
+    </div>
+    <div id="loginErr"></div>
+    <form onsubmit="doLogin(event)">
+      <div class="fg"><label>Employee ID</label>
+        <input id="loginId" placeholder="e.g. EMP001" autocomplete="username" required></div>
+      <div class="fg"><label>Password</label>
+        <input type="password" id="loginPw" placeholder="Password" autocomplete="current-password" required></div>
+      <button type="submit" class="btn btn-p" style="width:100%;padding:12px;justify-content:center">Sign In</button>
+    </form>
+    <p style="margin-top:18px;font-size:.78rem;text-align:center;color:var(--text2)">
+      Demo: <strong>EMP001</strong> / pass123 &nbsp;|&nbsp; <strong>ADMIN001</strong> / Admin@1234
+    </p>
+  </div>
+</div>
+
+<!-- EMPLOYEE VIEW -->
+<div id="viewEmployee" style="display:none">
+  <nav class="nav">
+    <div class="nav-brand">
+      <svg width="19" height="19" fill="none" stroke="#fff" stroke-width="2" viewBox="0 0 24 24">
+        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>
+      </svg>
+      Attendance Notifier
+    </div>
+    <div class="nav-right">
+      <span id="empNavName"></span>
+      <button class="nav-btn" onclick="doLogout()">Sign out</button>
+    </div>
+  </nav>
+  <div class="con">
+    <div id="empMsg"></div>
+    <div class="card">
+      <h2>Submit Attendance Notification</h2>
+      <div class="al ai" style="margin-bottom:16px">
+        Select your notification type, fill in the details, and submit. HR will be notified immediately.
+      </div>
+      <div class="fg">
+        <label>Notification Type *</label>
+        <div class="type-grid">
+          <div class="type-card" id="tc-late" onclick="selType('late')">
+            <div class="ticon">🕐</div>
+            <div class="tlabel" style="color:#92400e">Late</div>
+          </div>
+          <div class="type-card" id="tc-absent" onclick="selType('absent')">
+            <div class="ticon">📵</div>
+            <div class="tlabel" style="color:#991b1b">Absent</div>
+          </div>
+          <div class="type-card" id="tc-emergency" onclick="selType('emergency')">
+            <div class="ticon">🚨</div>
+            <div class="tlabel" style="color:#5b21b6">Emergency</div>
+          </div>
+        </div>
+      </div>
+      <form onsubmit="submitForm(event)" id="empForm">
+        <div class="row2">
+          <div class="fg"><label>Date *</label><input type="date" id="subDate" required></div>
+          <div class="fg" id="etGroup" style="display:none">
+            <label>Expected Arrival Time</label>
+            <input type="time" id="subEt">
+          </div>
+        </div>
+        <div class="fg">
+          <label>Reason * <span id="charCount" style="float:right;font-weight:400;color:#bbb">0/500</span></label>
+          <textarea id="subReason" rows="4" maxlength="500"
+            placeholder="Briefly describe your reason..."
+            required oninput="document.getElementById('charCount').textContent=this.value.length+'/500'"></textarea>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px">
+          <div class="sec-note">
+            <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+            </svg>
+            Data stays on your internal server
+          </div>
+          <button type="submit" class="btn btn-p" id="subBtn">Submit Notification</button>
+        </div>
+      </form>
+    </div>
+    <div class="card">
+      <h2>My Recent Submissions</h2>
+      <div id="empHistory"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ADMIN VIEW -->
+<div id="viewAdmin" style="display:none">
+  <nav class="nav">
+    <div class="nav-brand">
+      <svg width="19" height="19" fill="none" stroke="#fff" stroke-width="2" viewBox="0 0 24 24">
+        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>
+      </svg>
+      Admin Dashboard
+    </div>
+    <div class="nav-right">
+      <span id="admNavName"></span>
+      <button class="nav-btn" onclick="showAdminTab('submissions')">Submissions</button>
+      <button class="nav-btn" onclick="showAdminTab('employees')">Employees</button>
+      <button class="nav-btn" onclick="doLogout()">Sign out</button>
+    </div>
+  </nav>
+  <div class="con">
+    <div class="stats">
+      <div class="sc"><div class="n" id="aTotal">0</div><div class="l">Total</div></div>
+      <div class="sc"><div class="n" id="aLate"  style="color:#E8A838">0</div><div class="l">Late</div></div>
+      <div class="sc"><div class="n" id="aAbsent" style="color:#E01E5A">0</div><div class="l">Absent</div></div>
+      <div class="sc"><div class="n" id="aEmerg" style="color:#7C3085">0</div><div class="l">Emergency</div></div>
+      <div class="sc"><div class="n" id="aPend">0</div><div class="l">Pending</div></div>
+    </div>
+
+    <div id="tabSubmissions">
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:14px">
+          <h2 style="margin:0">Submissions</h2>
+          <button class="btn btn-o btn-sm" onclick="exportCSV()">Export CSV</button>
+        </div>
+        <div class="fi">
+          <select id="fType" onchange="renderSubs()">
+            <option value="">All Types</option>
+            <option value="late">Late</option>
+            <option value="absent">Absent</option>
+            <option value="emergency">Emergency</option>
+          </select>
+          <select id="fStatus" onchange="renderSubs()">
+            <option value="">All Status</option>
+            <option value="pending">Pending</option>
+            <option value="approved">Approved</option>
+            <option value="rejected">Rejected</option>
+          </select>
+          <input type="date" id="fFrom" onchange="renderSubs()">
+          <input type="date" id="fTo"   onchange="renderSubs()">
+          <input type="text" id="fSearch" oninput="renderSubs()" placeholder="Search name / ID...">
+        </div>
+        <div id="subTable"></div>
+      </div>
+    </div>
+
+    <div id="tabEmployees" style="display:none">
+      <div class="card">
+        <h2>Add Employee</h2>
+        <div id="empAddMsg"></div>
+        <form onsubmit="addEmp(event)">
+          <div class="row2">
+            <div class="fg"><label>Employee ID *</label><input id="nEid" placeholder="EMP005" required></div>
+            <div class="fg"><label>Full Name *</label><input id="nName" placeholder="Jane Doe" required></div>
+            <div class="fg"><label>Email *</label><input id="nEmail" type="email" placeholder="jane@company.com" required></div>
+            <div class="fg"><label>Department *</label><input id="nDept" placeholder="Operations" required></div>
+            <div class="fg"><label>Password * (min 8)</label><input id="nPw" type="password" required minlength="8"></div>
+            <div class="fg"><label>Role</label>
+              <select id="nRole"><option value="employee">Employee</option><option value="admin">Admin</option></select>
+            </div>
+          </div>
+          <button type="submit" class="btn btn-p">Add Employee</button>
+        </form>
+      </div>
+      <div class="card">
+        <h2>All Employees</h2>
+        <div id="empTable"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- REVIEW MODAL -->
+<div class="ov" id="reviewModal">
+  <div class="modal">
+    <h3 id="rvTitle">Review Submission</h3>
+    <div class="fg"><label>Status</label>
+      <select id="rvStatus">
+        <option value="pending">Pending</option>
+        <option value="approved">Approved</option>
+        <option value="rejected">Rejected</option>
+      </select>
+    </div>
+    <div class="fg"><label>Admin Notes (optional)</label>
+      <textarea id="rvNotes" rows="3" placeholder="Leave feedback for the employee..."></textarea>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-o" onclick="closeModal('reviewModal')">Cancel</button>
+      <button class="btn btn-p" onclick="saveReview()">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- BACKEND INFO MODAL -->
+<div class="ov" id="backendModal">
+  <div class="modal">
+    <h3>Connecting a Real Backend</h3>
+    <p style="font-size:.88rem;color:var(--text2);margin-bottom:14px;line-height:1.6">
+      This Netlify version is a UI prototype — data is in-memory only.
+      For production, connect one of these backends:
+    </p>
+    <div style="display:grid;gap:10px;font-size:.85rem">
+      <div style="padding:12px 14px;background:#f0f7ff;border-radius:6px;border-left:3px solid var(--blue)">
+        <strong>Option A — Self-hosted Python server</strong><br>
+        <span style="color:var(--text2)">Use <code>attendance-webhook/app.py</code> from this project.
+        Runs on your intranet. Data never leaves your premises.</span>
+      </div>
+      <div style="padding:12px 14px;background:#f5f0ff;border-radius:6px;border-left:3px solid #7C3085">
+        <strong>Option B — Swap the API calls</strong><br>
+        <span style="color:var(--text2)">Replace the <code>API.*</code> functions in this file
+        to call your own REST endpoints. The full UI stays intact.</span>
+      </div>
+      <div style="padding:12px 14px;background:#fffbeb;border-radius:6px;border-left:3px solid #E8A838">
+        <strong>Option C — Netlify Functions</strong><br>
+        <span style="color:var(--text2)">Add a <code>netlify/functions/</code> folder with serverless
+        handlers and a cloud database (Supabase, PlanetScale, etc.).</span>
+      </div>
+    </div>
+    <div class="btn-row" style="margin-top:16px">
+      <button class="btn btn-p" onclick="closeModal('backendModal')">Got it</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── In-memory database ──────────────────────────────────────────────────────
+function daysAgo(n){var d=new Date();d.setDate(d.getDate()-n);return d.toISOString().slice(0,10);}
+function hoursAgo(h){var d=new Date();d.setHours(d.getHours()-h);return d.toISOString().slice(0,16).replace('T',' ');}
+function today(){return new Date().toISOString().slice(0,10);}
+function nowStr(){return new Date().toISOString().slice(0,16).replace('T',' ');}
+
+var DB = {
+  users: [
+    {id:1,employee_id:'ADMIN001',full_name:'System Admin', email:'admin@company.com', department:'IT',         role:'admin',    password:'Admin@1234',is_active:true},
+    {id:2,employee_id:'EMP001',  full_name:'Alice Johnson',email:'alice@company.com', department:'Operations', role:'employee', password:'pass123',   is_active:true},
+    {id:3,employee_id:'EMP002',  full_name:'Bob Santos',   email:'bob@company.com',   department:'Finance',    role:'employee', password:'pass123',   is_active:true},
+    {id:4,employee_id:'EMP003',  full_name:'Carol Reyes',  email:'carol@company.com', department:'HR',         role:'employee', password:'pass123',   is_active:true}
+  ],
+  submissions: [
+    {id:1,user_id:2,type:'late',     reason:'Traffic jam on EDSA',            expected_time:'09:30',date:daysAgo(0),status:'pending', admin_notes:'',submitted_at:hoursAgo(2)},
+    {id:2,user_id:3,type:'absent',   reason:'Fever and flu, seeing doctor',    expected_time:'',     date:daysAgo(0),status:'approved',admin_notes:'Get well soon!',submitted_at:hoursAgo(5)},
+    {id:3,user_id:4,type:'emergency',reason:'Family medical emergency',        expected_time:'',     date:daysAgo(1),status:'pending', admin_notes:'',submitted_at:hoursAgo(26)},
+    {id:4,user_id:2,type:'absent',   reason:'Medical appointment',             expected_time:'',     date:daysAgo(3),status:'rejected',admin_notes:'Please submit leave form',submitted_at:hoursAgo(74)}
+  ],
+  nextSid:5, nextUid:5
+};
+
+// ── Session ─────────────────────────────────────────────────────────────────
+var currentUser = null;
+var selectedType = null;
+var reviewId = null;
+
+// ── Login / logout ──────────────────────────────────────────────────────────
+function doLogin(e) {
+  e.preventDefault();
+  var eid = document.getElementById('loginId').value.trim();
+  var pw  = document.getElementById('loginPw').value;
+  var u   = DB.users.find(function(u){return u.employee_id===eid && u.is_active && u.password===pw;});
+  if (!u) {
+    document.getElementById('loginErr').innerHTML = '<div class="al ae">Invalid employee ID or password.</div>';
+    return;
+  }
+  currentUser = u;
+  document.getElementById('loginErr').innerHTML = '';
+  if (u.role === 'admin') showAdmin();
+  else showEmployee();
+}
+
+function doLogout() {
+  currentUser = null; selectedType = null;
+  showView('viewLogin');
+}
+
+// ── View switching ───────────────────────────────────────────────────────────
+function showView(id) {
+  ['viewLogin','viewEmployee','viewAdmin'].forEach(function(v){
+    document.getElementById(v).style.display = 'none';
+  });
+  document.getElementById(id).style.display = 'block';
+}
+
+function showEmployee() {
+  showView('viewEmployee');
+  document.getElementById('empNavName').textContent = currentUser.full_name;
+  document.getElementById('subDate').value = today();
+  document.getElementById('etGroup').style.display = 'none';
+  renderHistory();
+}
+
+function showAdmin() {
+  showView('viewAdmin');
+  document.getElementById('admNavName').textContent = currentUser.full_name;
+  showAdminTab('submissions');
+}
+
+function showAdminTab(tab) {
+  document.getElementById('tabSubmissions').style.display = tab === 'submissions' ? 'block' : 'none';
+  document.getElementById('tabEmployees').style.display   = tab === 'employees'   ? 'block' : 'none';
+  if (tab === 'submissions') { renderStats(); renderSubs(); }
+  if (tab === 'employees')   renderEmps();
+}
+
+// ── Type selector ────────────────────────────────────────────────────────────
+function selType(t) {
+  selectedType = t;
+  ['late','absent','emergency'].forEach(function(x){
+    document.getElementById('tc-'+x).className = 'type-card' + (x===t ? ' sel-'+t : '');
+  });
+  document.getElementById('etGroup').style.display = t === 'late' ? 'block' : 'none';
+}
+
+// ── Submit ───────────────────────────────────────────────────────────────────
+function submitForm(e) {
+  e.preventDefault();
+  if (!selectedType) {
+    document.getElementById('empMsg').innerHTML = '<div class="al ae">Please select a notification type.</div>';
+    return;
+  }
+  var reason = document.getElementById('subReason').value.trim();
+  if (reason.length < 5) {
+    document.getElementById('empMsg').innerHTML = '<div class="al ae">Reason is too short.</div>';
+    return;
+  }
+  DB.submissions.push({
+    id: DB.nextSid++,
+    user_id: currentUser.id,
+    type: selectedType,
+    reason: reason,
+    expected_time: document.getElementById('subEt').value || '',
+    date: document.getElementById('subDate').value,
+    status: 'pending',
+    admin_notes: '',
+    submitted_at: nowStr()
+  });
+  document.getElementById('empMsg').innerHTML = '<div class="al ao">Notification submitted successfully! HR has been notified.</div>';
+  document.getElementById('empForm').reset();
+  document.getElementById('subDate').value = today();
+  document.getElementById('charCount').textContent = '0/500';
+  selectedType = null;
+  ['late','absent','emergency'].forEach(function(x){ document.getElementById('tc-'+x).className='type-card'; });
+  document.getElementById('etGroup').style.display = 'none';
+  renderHistory();
+  setTimeout(function(){ document.getElementById('empMsg').innerHTML=''; }, 5000);
+}
+
+function renderHistory() {
+  var rows = DB.submissions.filter(function(s){ return s.user_id === currentUser.id; })
+    .sort(function(a,b){ return b.submitted_at.localeCompare(a.submitted_at); }).slice(0,20);
+  var el = document.getElementById('empHistory');
+  if (!rows.length) { el.innerHTML='<p style="color:var(--text2);text-align:center;padding:20px 0">No submissions yet.</p>'; return; }
+  var tl={late:'Late',absent:'Absent',emergency:'Emergency'};
+  el.innerHTML = '<div class="tbl-wrap"><table><thead><tr><th>Date</th><th>Type</th><th>Reason</th><th>Submitted</th><th>Status</th></tr></thead><tbody>' +
+    rows.map(function(r){ return '<tr><td>'+r.date+'</td><td><span class="badge b-'+r.type+'">'+tl[r.type]+'</span></td>' +
+      '<td style="max-width:200px">'+esc(r.reason)+'</td>' +
+      '<td style="font-size:.78rem;color:var(--text2);white-space:nowrap">'+r.submitted_at+'</td>' +
+      '<td><span class="badge b-'+r.status+'">'+r.status+'</span></td></tr>'; }).join('') +
+  '</tbody></table></div>';
+}
+
+// ── Admin: stats ─────────────────────────────────────────────────────────────
+function renderStats() {
+  var s = DB.submissions;
+  document.getElementById('aTotal').textContent  = s.length;
+  document.getElementById('aLate').textContent   = s.filter(function(x){ return x.type==='late'; }).length;
+  document.getElementById('aAbsent').textContent = s.filter(function(x){ return x.type==='absent'; }).length;
+  document.getElementById('aEmerg').textContent  = s.filter(function(x){ return x.type==='emergency'; }).length;
+  document.getElementById('aPend').textContent   = s.filter(function(x){ return x.status==='pending'; }).length;
+}
+
+// ── Admin: submissions table ──────────────────────────────────────────────────
+function getFiltered() {
+  var type   = document.getElementById('fType').value;
+  var status = document.getElementById('fStatus').value;
+  var from   = document.getElementById('fFrom').value;
+  var to     = document.getElementById('fTo').value;
+  var search = document.getElementById('fSearch').value.toLowerCase();
+  return DB.submissions.map(function(s){
+    var u = DB.users.find(function(u){ return u.id===s.user_id; }) || {};
+    return Object.assign({},s,{full_name:u.full_name||'?',employee_id:u.employee_id||'?',department:u.department||'?'});
+  }).filter(function(r){
+    if (type   && r.type!==type)       return false;
+    if (status && r.status!==status)   return false;
+    if (from   && r.date<from)         return false;
+    if (to     && r.date>to)           return false;
+    if (search && !r.full_name.toLowerCase().includes(search) && !r.employee_id.toLowerCase().includes(search)) return false;
+    return true;
+  }).sort(function(a,b){ return b.submitted_at.localeCompare(a.submitted_at); });
+}
+
+function renderSubs() {
+  var rows = getFiltered();
+  var el = document.getElementById('subTable');
+  var tl = {late:'Late',absent:'Absent',emergency:'Emergency'};
+  if (!rows.length) { el.innerHTML='<p style="color:var(--text2);text-align:center;padding:30px 0">No submissions match your filters.</p>'; return; }
+  el.innerHTML = '<div class="tbl-wrap"><table><thead><tr><th>Date</th><th>Employee</th><th>Dept</th><th>Type</th><th>Reason</th><th>Submitted</th><th>Status</th><th></th></tr></thead><tbody>' +
+    rows.map(function(r){
+      return '<tr><td style="white-space:nowrap">'+r.date+'</td>' +
+        '<td><strong>'+esc(r.full_name)+'</strong><br><small style="color:var(--text2)">'+r.employee_id+'</small></td>' +
+        '<td style="font-size:.83rem">'+esc(r.department)+'</td>' +
+        '<td><span class="badge b-'+r.type+'">'+tl[r.type]+'</span></td>' +
+        '<td style="max-width:160px;font-size:.83rem">'+esc(r.reason)+'</td>' +
+        '<td style="font-size:.78rem;color:var(--text2);white-space:nowrap">'+r.submitted_at+'</td>' +
+        '<td><span class="badge b-'+r.status+'">'+r.status+'</span></td>' +
+        '<td><button class="btn btn-o btn-sm" onclick="openReview('+r.id+')">Review</button></td></tr>';
+    }).join('') + '</tbody></table></div>';
+}
+
+// ── Admin: review modal ───────────────────────────────────────────────────────
+function openReview(id) {
+  reviewId = id;
+  var s = DB.submissions.find(function(s){ return s.id===id; });
+  var u = DB.users.find(function(u){ return u.id===s.user_id; }) || {};
+  document.getElementById('rvTitle').textContent = 'Review — '+(u.full_name||'?')+' ('+s.date+')';
+  document.getElementById('rvStatus').value = s.status;
+  document.getElementById('rvNotes').value  = s.admin_notes || '';
+  showModal('reviewModal');
+}
+function saveReview() {
+  var s = DB.submissions.find(function(s){ return s.id===reviewId; });
+  if (s) { s.status=document.getElementById('rvStatus').value; s.admin_notes=document.getElementById('rvNotes').value; }
+  closeModal('reviewModal');
+  renderSubs(); renderStats();
+}
+
+// ── Admin: employees ──────────────────────────────────────────────────────────
+function renderEmps() {
+  var el = document.getElementById('empTable');
+  el.innerHTML = '<div class="tbl-wrap"><table><thead><tr><th>ID</th><th>Name</th><th>Email</th><th>Dept</th><th>Role</th><th>Status</th><th></th></tr></thead><tbody>' +
+    DB.users.map(function(u){
+      return '<tr><td><strong>'+esc(u.employee_id)+'</strong></td><td>'+esc(u.full_name)+'</td>' +
+        '<td style="font-size:.82rem">'+esc(u.email)+'</td><td>'+esc(u.department)+'</td>' +
+        '<td><span class="badge b-'+u.role+'">'+u.role+'</span></td>' +
+        '<td><span class="badge" style="background:'+(u.is_active?'#d1fae5':'#fee2e2')+';color:'+(u.is_active?'#065f46':'#991b1b')+';">'+(u.is_active?'Active':'Inactive')+'</span></td>' +
+        '<td>'+(u.id!==currentUser.id ? '<button class="btn btn-o btn-sm" onclick="toggleEmp('+u.id+','+u.is_active+')">'+(u.is_active?'Deactivate':'Activate')+'</button>' : '<small style="color:var(--text2)">you</small>')+'</td></tr>';
+    }).join('') + '</tbody></table></div>';
+}
+function addEmp(e) {
+  e.preventDefault();
+  var eid  = document.getElementById('nEid').value.trim().toUpperCase();
+  var name = document.getElementById('nName').value.trim();
+  var email= document.getElementById('nEmail').value.trim().toLowerCase();
+  var dept = document.getElementById('nDept').value.trim();
+  var pw   = document.getElementById('nPw').value;
+  var role = document.getElementById('nRole').value;
+  var msg  = document.getElementById('empAddMsg');
+  if (DB.users.find(function(u){ return u.employee_id===eid; }))  { msg.innerHTML='<div class="al ae" style="margin-top:10px">Employee ID already exists.</div>'; return; }
+  if (DB.users.find(function(u){ return u.email===email; }))       { msg.innerHTML='<div class="al ae" style="margin-top:10px">Email already exists.</div>'; return; }
+  if (pw.length < 8) { msg.innerHTML='<div class="al ae" style="margin-top:10px">Password must be at least 8 characters.</div>'; return; }
+  DB.users.push({id:DB.nextUid++,employee_id:eid,full_name:name,email:email,department:dept,role:role,password:pw,is_active:true});
+  msg.innerHTML='<div class="al ao" style="margin-top:10px">Employee added successfully.</div>';
+  e.target.reset();
+  renderEmps();
+  setTimeout(function(){ msg.innerHTML=''; }, 4000);
+}
+function toggleEmp(id, active) {
+  var u = DB.users.find(function(u){ return u.id===id; });
+  if (u) u.is_active = !active;
+  renderEmps();
+}
+
+// ── CSV export ────────────────────────────────────────────────────────────────
+function exportCSV() {
+  var rows = getFiltered();
+  var hdr = ['ID','Emp ID','Name','Department','Type','Date','Reason','Expected Time','Submitted','Status','Admin Notes'];
+  var lines = [hdr.join(',')].concat(rows.map(function(r){
+    return [r.id,r.employee_id,r.full_name,r.department,r.type,r.date,
+      '"'+r.reason.replace(/"/g,'""')+'"',r.expected_time||'',r.submitted_at,r.status,
+      '"'+(r.admin_notes||'').replace(/"/g,'""')+'"'].join(',');
+  }));
+  var a = document.createElement('a');
+  a.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(lines.join('\n'));
+  a.download = 'attendance_export.csv';
+  a.click();
+}
+
+// ── Modal helpers ─────────────────────────────────────────────────────────────
+function showModal(id)  { document.getElementById(id).classList.add('show'); }
+function closeModal(id) { document.getElementById(id).classList.remove('show'); }
+function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+document.querySelectorAll('.ov').forEach(function(ov){
+  ov.addEventListener('click', function(e){ if(e.target===ov) ov.classList.remove('show'); });
+});
+</script>
+</body>
+</html>
